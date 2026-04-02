@@ -99,13 +99,7 @@ final class Invoice
 
     public function markAsSending(): void
     {
-        if (! $this->status->isDraft()) {
-            throw InvalidInvoiceStateTransitionException::from($this->status, StatusEnum::Sending);
-        }
-
-        if (count($this->productLines) === 0) {
-            throw InvoiceCannotBeSentException::missingProductLines();
-        }
+        $this->assertCanBeMarkedAsSending();
 
         $this->status = StatusEnum::Sending;
     }
@@ -125,5 +119,16 @@ final class Invoice
             static fn (InvoiceProductLine $line): int => $line->totalUnitPrice(),
             $this->productLines,
         ));
+    }
+
+    public function assertCanBeMarkedAsSending(): void
+    {
+        if (! $this->status->isDraft()) {
+            throw InvalidInvoiceStateTransitionException::from($this->status, StatusEnum::Sending);
+        }
+
+        if (count($this->productLines) === 0) {
+            throw InvoiceCannotBeSentException::missingProductLines();
+        }
     }
 }

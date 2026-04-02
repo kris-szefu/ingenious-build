@@ -6,6 +6,7 @@ namespace Modules\Invoices\Presentation\Http\Exception;
 
 use Illuminate\Foundation\Configuration\Exceptions;
 use Modules\Invoices\Application\Exceptions\InvoiceNotFoundException;
+use Modules\Invoices\Application\Exceptions\InvoiceNotificationFailedException;
 use Modules\Invoices\Domain\Exceptions\InvalidInvoiceIdException;
 use Modules\Invoices\Domain\Exceptions\InvalidInvoiceStateException;
 use Modules\Invoices\Domain\Exceptions\InvalidInvoiceStateTransitionException;
@@ -34,6 +35,10 @@ final class InvoicesApiExceptionMapper
 
         $exceptions->render(static function (InvalidInvoiceStateException $exception) {
             return response()->json(['message' => $exception->getMessage()], Response::HTTP_CONFLICT);
+        });
+
+        $exceptions->render(static function (InvoiceNotificationFailedException $exception) {
+            return response()->json(['message' => $exception->getMessage()], Response::HTTP_SERVICE_UNAVAILABLE);
         });
     }
 }

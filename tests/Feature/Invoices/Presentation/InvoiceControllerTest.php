@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Invoices\Presentation;
 
+use Modules\Invoices\Application\Ports\InvoiceNotifierInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
+use RuntimeException;
 use Tests\TestCase;
 
 final class InvoiceControllerTest extends TestCase
@@ -127,6 +129,90 @@ final class InvoiceControllerTest extends TestCase
 
         $this->postJson(route('invoices.send', ['invoiceId' => $invoiceId]))
             ->assertConflict();
+    }
+
+    public function test_webhook_delivery_transitions_sending_invoice_to_sent_to_client(): void
+    {
+        $created = $this->postJson(route('invoices.create'), [
+            'customerName' => 'John Doe',
+            'customerEmail' => 'john@example.com',
+            'productLines' => [
+                ['name' => 'Hat', 'quantity' => 1, 'unitPrice' => 100],
+            ],
+        ])->assertCreated();
+
+        $invoiceId = (string) $created->json('invoiceId');
+
+        $this->postJson(route('invoices.send', ['invoiceId' => $invoiceId]))
+            ->assertOk()
+            ->assertJsonPath('status', 'sending');
+
+        $this->getJson(route('notification.hook', ['action' => 'delivered', 'reference' => $invoiceId]))
+            ->assertOk();
+
+        $this->getJson(route('invoices.view', ['invoiceId' => $invoiceId]))
+            ->assertOk()
+            ->assertJsonPath('status', 'sent-to-client');
+    }
+
+    public function test_webhook_delivery_for_missing_invoice_is_ignored(): void
+    {
+        $missingInvoiceId = '00000000-0000-0000-0000-000000009999';
+
+        $this->getJson(route('notification.hook', ['action' => 'delivered', 'reference' => $missingInvoiceId]))
+            ->assertOk();
+
+        $this->getJson(route('invoices.view', ['invoiceId' => $missingInvoiceId]))
+            ->assertNotFound();
+    }
+
+    public function test_webhook_delivery_does_not_transition_draft_invoice(): void
+    {
+        $created = $this->postJson(route('invoices.create'), [
+            'customerName' => 'John Doe',
+            'customerEmail' => 'john@example.com',
+            'productLines' => [
+                ['name' => 'Hat', 'quantity' => 1, 'unitPrice' => 100],
+            ],
+        ])->assertCreated();
+
+        $invoiceId = (string) $created->json('invoiceId');
+
+        $this->getJson(route('notification.hook', ['action' => 'delivered', 'reference' => $invoiceId]))
+            ->assertOk();
+
+        $this->getJson(route('invoices.view', ['invoiceId' => $invoiceId]))
+            ->assertOk()
+            ->assertJsonPath('status', 'draft');
+    }
+
+    public function test_send_returns_service_unavailable_when_notification_fails(): void
+    {
+        $this->app->bind(InvoiceNotifierInterface::class, static fn () => new class implements InvoiceNotifierInterface
+        {
+            public function notify(
+                string $invoiceId,
+                string $toEmail,
+                string $subject,
+                string $message,
+            ): void {
+                throw new RuntimeException('Notification provider failure.');
+            }
+        });
+
+        $created = $this->postJson(route('invoices.create'), [
+            'customerName' => 'John Doe',
+            'customerEmail' => 'john@example.com',
+            'productLines' => [
+                ['name' => 'Hat', 'quantity' => 1, 'unitPrice' => 100],
+            ],
+        ])->assertCreated();
+
+        $invoiceId = (string) $created->json('invoiceId');
+
+        $response = $this->postJson(route('invoices.send', ['invoiceId' => $invoiceId]));
+        $response->assertStatus(503);
+        $response->assertJsonStructure(['message']);
     }
 
     /**

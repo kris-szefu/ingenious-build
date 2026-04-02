@@ -69,3 +69,4 @@ The Notification module included in this repository is a minimal, mock integrati
 * Kept `InvoiceProductLine` as a value object (no domain identity for now); It should be introduced when business needs line-level operations (targeted updates, per-line history/references, or line-level concurrency control).
 * All requests are authorized by default since authorization is out of scope for this project.
 * Avoided direct DB writes in feature tests because test DB configuration is out of scope; kept tests HTTP-driven where possible.
+* Treated Notification module as an external dependency and avoided modifying it.

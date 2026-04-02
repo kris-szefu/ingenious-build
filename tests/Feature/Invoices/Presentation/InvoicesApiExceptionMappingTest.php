@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Invoices\Presentation;
 
 use Illuminate\Testing\TestResponse;
+use Modules\Invoices\Application\Ports\InvoiceNotifierInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
+use RuntimeException;
 use Tests\TestCase;
 
 final class InvoicesApiExceptionMappingTest extends TestCase
@@ -30,6 +32,7 @@ final class InvoicesApiExceptionMappingTest extends TestCase
             'InvalidInvoiceIdException' => ['invalid_invoice_id', 422],
             'InvoiceCannotBeSentException' => ['invoice_cannot_be_sent', 422],
             'InvalidInvoiceStateTransitionException' => ['invalid_state_transition', 409],
+            'InvoiceNotificationFailedException' => ['notification_failed', 503],
         ];
     }
 
@@ -40,6 +43,7 @@ final class InvoicesApiExceptionMappingTest extends TestCase
             'invalid_invoice_id' => $this->getJson(route('invoices.view', ['invoiceId' => ' '])),
             'invoice_cannot_be_sent' => $this->triggerCannotBeSentScenario(),
             'invalid_state_transition' => $this->triggerInvalidTransitionScenario(),
+            'notification_failed' => $this->triggerNotificationFailureScenario(),
         };
     }
 
@@ -69,6 +73,33 @@ final class InvoicesApiExceptionMappingTest extends TestCase
         $invoiceId = (string) $created->json('invoiceId');
 
         $this->postJson(route('invoices.send', ['invoiceId' => $invoiceId]))->assertOk();
+
+        return $this->postJson(route('invoices.send', ['invoiceId' => $invoiceId]));
+    }
+
+    private function triggerNotificationFailureScenario(): TestResponse
+    {
+        $this->app->bind(InvoiceNotifierInterface::class, static fn () => new class implements InvoiceNotifierInterface
+        {
+            public function notify(
+                string $invoiceId,
+                string $toEmail,
+                string $subject,
+                string $message,
+            ): void {
+                throw new RuntimeException('Notification provider failure.');
+            }
+        });
+
+        $created = $this->postJson(route('invoices.create'), [
+            'customerName' => 'John Doe',
+            'customerEmail' => 'john@example.com',
+            'productLines' => [
+                ['name' => 'Hat', 'quantity' => 1, 'unitPrice' => 100],
+            ],
+        ])->assertCreated();
+
+        $invoiceId = (string) $created->json('invoiceId');
 
         return $this->postJson(route('invoices.send', ['invoiceId' => $invoiceId]));
     }
