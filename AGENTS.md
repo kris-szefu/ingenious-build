@@ -197,3 +197,103 @@ This project has domain-specific skills available. You MUST activate the relevan
 - To filter on a particular test name: `vendor/bin/sail artisan test --compact --filter=testName` (recommended after making a change to a related file).
 
 </laravel-boost-guidelines>
+
+=== ddd rules ===
+
+# DDD Governance
+
+## Scope
+
+- DDD rules are strict for all new code.
+- Existing code does not need retroactive refactoring until that code is touched.
+
+## Module Structure
+
+- All new business code must be organized by bounded context under `src/Modules/<ModuleName>/`.
+- Each new module must follow this structure:
+  - `Domain/`
+  - `Application/`
+  - `Infrastructure/`
+  - `Presentation/`
+  - `Api/` (for cross-module contracts, DTOs, and events)
+
+## Dependency Direction & Boundaries
+
+- `Domain` must be framework-agnostic and must not depend on Laravel or infrastructure concerns.
+- `Application` may depend on `Domain` only and coordinates use cases.
+- `Infrastructure` implements persistence, drivers, external integrations, and adapters for `Application`/`Domain` ports.
+- `Presentation` handles transport concerns (HTTP/CLI) and orchestrates `Application` use cases.
+- Controllers and transport handlers in `Presentation` must remain thin; business invariants belong to `Domain`.
+- Repository interfaces/contracts belong in `Application/Ports`; infrastructure implementations must depend on these contracts.
+
+## Cross-Module Communication
+
+- Modules may communicate only through `src/Modules/*/Api/*` contracts, DTOs, and events.
+- Direct coupling to another module's `Infrastructure` classes is forbidden.
+- Internal implementation classes are non-public outside their own module.
+- Inter-module reactions must use events/listeners (for example, notification delivery -> invoice status transition), not direct infrastructure calls.
+
+## Persistence Rules
+
+- Eloquent models and concrete repositories belong in `Infrastructure`.
+- Repository interfaces/contracts belong in `Application/Ports`.
+- `Domain` entities, value objects, policies, and invariants must not be tied to ORM implementations.
+
+## Basic DDD Implementation Rules
+
+- Use explicit names for application actions:
+  - Commands: `...Command`
+  - Queries: `...Query`
+  - Application execution classes: `...UseCase` only
+  - Event subscribers/listeners: `...Handler` only
+  - `...Handler` must not be used for command/query execution services.
+  - Domain services: noun + `Service` with domain intent, not framework intent.
+- Namespaces must mirror folder structure exactly.
+- Request-shape validation (HTTP payload shape, required keys, primitive formats) belongs to `Presentation`.
+- Business validation (state transitions, invariants, domain rules) belongs to `Domain`.
+- Domain exceptions belong to `Domain`; translation to transport responses belongs to `Presentation`.
+- For new DDD code, prefer module-level unit tests first, then focused feature/API tests for integration paths.
+
+## Canonical Module Example
+
+```text
+src/Modules/Invoices/
+├── Api/
+│   ├── Dtos/
+│   │   └── SendInvoiceData.php
+│   ├── Events/
+│   │   └── InvoiceSentToClientEvent.php
+│   └── InvoiceFacadeInterface.php
+├── Domain/
+│   ├── Entities/
+│   │   └── Invoice.php
+│   ├── Enums/
+│   │   └── StatusEnum.php
+│   ├── Exceptions/
+│   │   └── InvalidInvoiceStateException.php
+│   └── Services/
+│       └── InvoiceSendingService.php
+├── Application/
+│   ├── Commands/
+│   │   └── SendInvoiceCommand.php
+│   ├── EventHandlers/
+│   │   └── NotificationDeliveredHandler.php
+│   ├── Ports/
+│   │   └── InvoiceRepositoryInterface.php
+│   ├── Queries/
+│   │   └── GetInvoiceQuery.php
+│   └── UseCases/
+│       └── SendInvoiceUseCase.php
+├── Infrastructure/
+│   ├── Persistence/
+│   │   ├── Models/
+│   │   │   └── InvoiceModel.php
+│   │   └── Repositories/
+│   │       └── EloquentInvoiceRepository.php
+│   └── Providers/
+│       └── InvoiceServiceProvider.php
+└── Presentation/
+    ├── Http/
+    │   └── InvoiceController.php
+    └── routes.php
+```
