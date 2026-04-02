@@ -63,3 +63,4 @@ The Notification module included in this repository is a minimal, mock integrati
 * This project will be developed with the AI-first approach in mind.
 * Updated the composer packages to fix the build issue with Dockerfile provided by Laravel Sail and fix composer audit warnings.
 * Installed Laravel Boost to make the project AI-friendly.
+* Used default Laravel Pint configs to fix the code issues. Even though I prefer different coding styles, I assume this is an expected configuration.
