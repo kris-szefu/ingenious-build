@@ -37,7 +37,7 @@ The invoice should contain the following fields:
 ### Delivery:
 
 * Upon successful delivery by the Dummy notification provider:
-  * The **Notification Module** triggers a `ResourceDeliveredEvent` via webhook.
+  * The **Notification Module** triggers a `WebhookDeliveredEvent` via webhook.
   * The **Invoice Module** listens for and captures this event.
   * The **Invoice Status** is updated from `sending` to `sent-to-client`.
   * **Note**: This transition requires that the invoice is currently in the `sending` status.
