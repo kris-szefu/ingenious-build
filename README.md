@@ -70,3 +70,6 @@ The Notification module included in this repository is a minimal, mock integrati
 * All requests are authorized by default since authorization is out of scope for this project.
 * Avoided direct DB writes in feature tests because test DB configuration is out of scope; kept tests HTTP-driven where possible.
 * Treated Notification module as an external dependency and avoided modifying it.
+* Ramsey's Uuid library is used over Laravel's Str::uuid() for consistency with the Notification module.
+* Found out that request input in Laravel's convention is snake_case. Decided to avoid refactoring and left it as is for this task.
+* To summarize, I am happy with the Invoices module's structure and approach. Domain does not depend on other layers. Application depends on Domain, but not on Infrastructure.
