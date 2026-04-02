@@ -67,3 +67,5 @@ The Notification module included in this repository is a minimal, mock integrati
 * Added DDD governance rules to `AGENTS.md` for new code.
 * Decided to have repository interfaces in the application layer. Though I must admit that I was not sure if this is the best approach. Most likely it depends on the team's preference. 
 * Kept `InvoiceProductLine` as a value object (no domain identity for now); It should be introduced when business needs line-level operations (targeted updates, per-line history/references, or line-level concurrency control).
+* All requests are authorized by default since authorization is out of scope for this project.
+* Avoided direct DB writes in feature tests because test DB configuration is out of scope; kept tests HTTP-driven where possible.
