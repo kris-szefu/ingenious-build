@@ -66,3 +66,4 @@ The Notification module included in this repository is a minimal, mock integrati
 * Used default Laravel Pint configs to fix the code issues. Even though I prefer different coding styles, I assume this is an expected configuration.
 * Added DDD governance rules to `AGENTS.md` for new code.
 * Decided to have repository interfaces in the application layer. Though I must admit that I was not sure if this is the best approach. Most likely it depends on the team's preference. 
+* Kept `InvoiceProductLine` as a value object (no domain identity for now); It should be introduced when business needs line-level operations (targeted updates, per-line history/references, or line-level concurrency control).
