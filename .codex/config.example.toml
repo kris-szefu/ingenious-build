@@ -1,0 +1,24 @@
+# Copy this file to `.codex/config.toml` and replace placeholders.
+# Use absolute local paths in `.codex/config.toml` for reliability.
+#
+# Option A (recommended): run Laravel Boost MCP via Sail.
+# Requires Docker and a running Sail environment.
+[mcp_servers.laravel-boost]
+command = "/ABSOLUTE/PATH/TO/PROJECT/vendor/bin/sail"
+args = ["artisan", "boost:mcp"]
+cwd = "/ABSOLUTE/PATH/TO/PROJECT"
+
+# Option B (fallback): run Laravel Boost MCP on host PHP.
+# Uncomment this block and comment out Option A if you prefer host PHP.
+#
+# [mcp_servers.laravel-boost]
+# command = "/ABSOLUTE/PATH/TO/PHP"
+# args = [
+#     "-d",
+#     "display_errors=0",
+#     "-d",
+#     "error_reporting=E_ALL&~E_DEPRECATED&~E_USER_DEPRECATED",
+#     "artisan",
+#     "boost:mcp",
+# ]
+# cwd = "/ABSOLUTE/PATH/TO/PROJECT"

@@ -37,7 +37,7 @@ The invoice should contain the following fields:
 ### Delivery:
 
 * Upon successful delivery by the Dummy notification provider:
-  * The **Notification Module** triggers a `ResourceDeliveredEvent` via webhook.
+  * The **Notification Module** triggers a `WebhookDeliveredEvent` via webhook.
   * The **Invoice Module** listens for and captures this event.
   * The **Invoice Status** is updated from `sending` to `sent-to-client`.
   * **Note**: This transition requires that the invoice is currently in the `sending` status.
@@ -57,3 +57,19 @@ The Notification module included in this repository is a minimal, mock integrati
 
 * Start the project by running `./start.sh`.
 * To access the container environment, use: `docker compose exec app bash`.
+
+## Performer Comments:
+
+* This project will be developed with the AI-first approach in mind.
+* Updated the composer packages to fix the build issue with Dockerfile provided by Laravel Sail and fix composer audit warnings.
+* Installed Laravel Boost to make the project AI-friendly.
+* Used default Laravel Pint configs to fix the code issues. Even though I prefer different coding styles, I assume this is an expected configuration.
+* Added DDD governance rules to `AGENTS.md` for new code.
+* Decided to have repository interfaces in the application layer. Though I must admit that I was not sure if this is the best approach. Most likely it depends on the team's preference. 
+* Kept `InvoiceProductLine` as a value object (no domain identity for now); It should be introduced when business needs line-level operations (targeted updates, per-line history/references, or line-level concurrency control).
+* All requests are authorized by default since authorization is out of scope for this project.
+* Avoided direct DB writes in feature tests because test DB configuration is out of scope; kept tests HTTP-driven where possible.
+* Treated Notification module as an external dependency and avoided modifying it.
+* Ramsey's Uuid library is used over Laravel's Str::uuid() for consistency with the Notification module.
+* Found out that request input in Laravel's convention is snake_case. Decided to avoid refactoring and left it as is for this task.
+* To summarize, I am happy with the Invoices module's structure and approach. Domain does not depend on other layers. Application depends on Domain, but not on Infrastructure.
