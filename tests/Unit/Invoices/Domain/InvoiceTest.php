@@ -7,6 +7,7 @@ namespace Tests\Unit\Invoices\Domain;
 use Modules\Invoices\Domain\Entities\Invoice;
 use Modules\Invoices\Domain\Enums\StatusEnum;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
+use Modules\Invoices\Domain\ValueObjects\InvoiceId;
 use Modules\Invoices\Domain\ValueObjects\ProductLine;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -85,5 +86,23 @@ final class InvoiceTest extends TestCase
         );
         $this->expectException(\Error::class);
         $invoice->productLines = [];
+    }
+
+    #[Test]
+    public function reconstituted_invoice_keeps_its_status(): void
+    {
+        $id = InvoiceId::generate();
+
+        $invoice = Invoice::reconstitute(
+            $id,
+            'test',
+            CustomerEmail::fromString('test@example.com'),
+            StatusEnum::Sending,
+            [new ProductLine('test', 2, 100)],
+        );
+
+        $this->assertSame($id->value, $invoice->id->value);
+        $this->assertSame(StatusEnum::Sending, $invoice->status);
+        $this->assertSame(200, $invoice->totalPrice());
     }
 }

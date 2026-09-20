@@ -35,6 +35,23 @@ final class Invoice
         );
     }
 
+    /** @param list<ProductLine> $productLines */
+    public static function reconstitute(
+        InvoiceId $id,
+        string $customerName,
+        CustomerEmail $customerEmail,
+        StatusEnum $status,
+        array $productLines,
+    ): self {
+        return new self(
+            $id,
+            $customerName,
+            $customerEmail,
+            $status,
+            $productLines,
+        );
+    }
+
     public function totalPrice(): int
     {
         return array_reduce(
