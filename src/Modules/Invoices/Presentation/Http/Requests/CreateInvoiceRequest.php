@@ -14,10 +14,10 @@ final class CreateInvoiceRequest extends FormRequest
         return [
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_email' => ['required', 'string', 'email:filter', 'max:255'],
-            'product_lines' => ['sometimes', 'array'],
+            'product_lines' => ['sometimes', 'array', 'max:100'],
             'product_lines.*.name' => ['required', 'string', 'max:255'],
-            'product_lines.*.quantity' => ['required', 'integer'],
-            'product_lines.*.unit_price' => ['required', 'integer'],
+            'product_lines.*.quantity' => ['required', 'integer', 'min:-1000000', 'max:1000000'],
+            'product_lines.*.unit_price' => ['required', 'integer', 'min:-1000000000', 'max:1000000000'],
         ];
     }
 

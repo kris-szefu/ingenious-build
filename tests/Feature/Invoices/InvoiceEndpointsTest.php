@@ -12,6 +12,7 @@ use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
 use Modules\Invoices\Domain\ValueObjects\ProductLine;
 use Modules\Notifications\Api\NotificationFacadeInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -67,6 +68,60 @@ final class InvoiceEndpointsTest extends TestCase
                 'customer_email',
                 'product_lines.0.quantity',
             ]);
+    }
+
+    #[Test]
+    public function it_accepts_the_largest_amounts_and_computes_their_total(): void
+    {
+        $this->postJson('/api/invoices', [
+            'customer_name' => 'Acme Corp',
+            'customer_email' => 'billing@acme.test',
+            'product_lines' => [
+                ['name' => 'Crane', 'quantity' => 1000000, 'unit_price' => 1000000000],
+            ],
+        ])
+            ->assertCreated()
+            ->assertJsonPath('total_price', 1000000000000000);
+    }
+
+    #[Test]
+    #[DataProvider('amountsThatCouldOverflow')]
+    public function it_rejects_amounts_whose_total_could_overflow(string $field, int $quantity, int $unitPrice): void
+    {
+        $this->postJson('/api/invoices', [
+            'customer_name' => 'Acme Corp',
+            'customer_email' => 'billing@acme.test',
+            'product_lines' => [
+                ['name' => 'Crane', 'quantity' => $quantity, 'unit_price' => $unitPrice],
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([$field]);
+
+        $this->assertDatabaseCount('invoices', 0);
+    }
+
+    /** @return array<string, array{string, int, int}> */
+    public static function amountsThatCouldOverflow(): array
+    {
+        return [
+            'quantity too large' => ['product_lines.0.quantity', 1000001, 100],
+            'quantity too small' => ['product_lines.0.quantity', -1000001, 100],
+            'unit price too large' => ['product_lines.0.unit_price', 1, 1000000001],
+            'unit price too small' => ['product_lines.0.unit_price', 1, -1000000001],
+        ];
+    }
+
+    #[Test]
+    public function it_rejects_more_than_a_hundred_product_lines(): void
+    {
+        $this->postJson('/api/invoices', [
+            'customer_name' => 'Acme Corp',
+            'customer_email' => 'billing@acme.test',
+            'product_lines' => array_fill(0, 101, ['name' => 'Desk', 'quantity' => 1, 'unit_price' => 100]),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['product_lines']);
     }
 
     #[Test]
