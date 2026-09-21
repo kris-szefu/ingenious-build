@@ -10,3 +10,7 @@ Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.st
 Route::get('/invoices/{invoiceId}', [InvoiceController::class, 'show'])
     ->whereUuid('invoiceId')
     ->name('invoices.show');
+
+Route::post('/invoices/{invoiceId}/send', [InvoiceController::class, 'send'])
+    ->whereUuid('invoiceId')
+    ->name('invoices.send');

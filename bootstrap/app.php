@@ -23,4 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(static fn (InvoiceNotFound $e, Request $request) => $request->expectsJson()
             ? response()->json(['message' => $e->getMessage()], Response::HTTP_NOT_FOUND)
             : null);
+
+        $exceptions->render(static fn (DomainException $e, Request $request) => $request->expectsJson()
+            ? response()->json(['message' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY)
+            : null);
     })->create();

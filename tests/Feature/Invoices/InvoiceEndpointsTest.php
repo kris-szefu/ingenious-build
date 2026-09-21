@@ -12,6 +12,7 @@ use Modules\Invoices\Domain\Repositories\InvoiceRepository;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
 use Modules\Invoices\Domain\ValueObjects\ProductLine;
+use Modules\Notifications\Api\NotificationFacadeInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -125,9 +126,65 @@ final class InvoiceEndpointsTest extends TestCase
     }
 
     #[Test]
+    public function it_sends_a_draft_invoice_to_the_customer(): void
+    {
+        $invoice = $this->storedDraft([new ProductLine('Desk', 2, 15000)]);
+
+        $this->mock(NotificationFacadeInterface::class)
+            ->shouldReceive('notify')
+            ->once();
+
+        $this->postJson('/api/invoices/'.$invoice->id->value.'/send')
+            ->assertOk()
+            ->assertJsonPath('status', 'sending');
+
+        $this->assertDatabaseHas('invoices', ['id' => $invoice->id->value, 'status' => 'sending']);
+    }
+
+    #[Test]
+    public function it_refuses_to_send_an_invoice_without_product_lines(): void
+    {
+        $invoice = $this->storedDraft([]);
+
+        $this->postJson('/api/invoices/'.$invoice->id->value.'/send')
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'An invoice without product lines cannot be sent.');
+
+        $this->assertDatabaseHas('invoices', ['id' => $invoice->id->value, 'status' => 'draft']);
+    }
+
+    #[Test]
+    public function it_refuses_to_send_an_invoice_twice(): void
+    {
+        $invoice = $this->storedDraft([new ProductLine('Desk', 2, 15000)]);
+
+        $this->postJson('/api/invoices/'.$invoice->id->value.'/send')->assertOk();
+
+        $this->postJson('/api/invoices/'.$invoice->id->value.'/send')
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'An invoice cannot move from "sending" to "sending".');
+    }
+
+    #[Test]
+    public function it_answers_404_when_sending_an_unknown_invoice(): void
+    {
+        $this->postJson('/api/invoices/'.InvoiceId::generate()->value.'/send')
+            ->assertNotFound();
+    }
+
+    #[Test]
     public function it_answers_404_for_an_id_that_is_not_a_uuid(): void
     {
         $this->getJson('/api/invoices/not-a-uuid')
             ->assertNotFound();
+    }
+
+    /** @param list<ProductLine> $productLines */
+    private function storedDraft(array $productLines): Invoice
+    {
+        $invoice = Invoice::create('Acme Corp', CustomerEmail::fromString('billing@acme.test'), $productLines);
+        $this->app->make(InvoiceRepository::class)->save($invoice);
+
+        return $invoice;
     }
 }
