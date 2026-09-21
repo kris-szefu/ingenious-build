@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Invoices;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Invoices\Domain\Entities\Invoice;
 use Modules\Invoices\Domain\Enums\StatusEnum;
 use Modules\Invoices\Domain\Repositories\InvoiceRepository;
@@ -16,8 +15,6 @@ use Tests\TestCase;
 
 final class EloquentInvoiceRepositoryTest extends TestCase
 {
-    use RefreshDatabase;
-
     private InvoiceRepository $repository;
 
     protected function setUp(): void

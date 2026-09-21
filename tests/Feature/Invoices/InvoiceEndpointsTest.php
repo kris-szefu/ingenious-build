@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Invoices;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Exceptions;
 use Modules\Invoices\Application\Exceptions\InvoiceNotFound;
 use Modules\Invoices\Domain\Entities\Invoice;
@@ -18,8 +17,6 @@ use Tests\TestCase;
 
 final class InvoiceEndpointsTest extends TestCase
 {
-    use RefreshDatabase;
-
     #[Test]
     public function it_creates_a_draft_invoice_with_product_lines(): void
     {
