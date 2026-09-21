@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Invoices\Domain\Entities;
 
 use Modules\Invoices\Domain\Enums\StatusEnum;
+use Modules\Invoices\Domain\Exceptions\InvalidStatusTransition;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
 use Modules\Invoices\Domain\ValueObjects\ProductLine;
@@ -50,6 +51,15 @@ final class Invoice
             $status,
             $productLines,
         );
+    }
+
+    public function send(): void
+    {
+        if ($this->status !== StatusEnum::Draft) {
+            throw InvalidStatusTransition::from($this->status, StatusEnum::Sending);
+        }
+
+        $this->status = StatusEnum::Sending;
     }
 
     public function totalPrice(): int

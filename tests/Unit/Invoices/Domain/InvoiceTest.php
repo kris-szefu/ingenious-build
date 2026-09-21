@@ -6,9 +6,11 @@ namespace Tests\Unit\Invoices\Domain;
 
 use Modules\Invoices\Domain\Entities\Invoice;
 use Modules\Invoices\Domain\Enums\StatusEnum;
+use Modules\Invoices\Domain\Exceptions\InvalidStatusTransition;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
 use Modules\Invoices\Domain\ValueObjects\ProductLine;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -104,5 +106,54 @@ final class InvoiceTest extends TestCase
         $this->assertSame($id->value, $invoice->id->value);
         $this->assertSame(StatusEnum::Sending, $invoice->status);
         $this->assertSame(200, $invoice->totalPrice());
+    }
+
+    #[Test]
+    public function sending_a_draft_moves_it_to_sending(): void
+    {
+        $invoice = self::invoice(StatusEnum::Draft, [
+            new ProductLine('Desk', 2, 15000),
+            new ProductLine('Chair', 4, 7500),
+        ]);
+
+        $invoice->send();
+
+        $this->assertSame(StatusEnum::Sending, $invoice->status);
+    }
+
+    #[Test]
+    #[DataProvider('statusesOtherThanDraft')]
+    public function only_a_draft_can_be_sent(StatusEnum $status): void
+    {
+        $invoice = self::invoice($status, [new ProductLine('Desk', 2, 15000)]);
+
+        try {
+            $invoice->send();
+            $this->fail('Expected InvalidStatusTransition.');
+        } catch (InvalidStatusTransition) {
+        }
+
+        $this->assertSame($status, $invoice->status);
+    }
+
+    /** @return array<string, array{StatusEnum}> */
+    public static function statusesOtherThanDraft(): array
+    {
+        return [
+            'sending' => [StatusEnum::Sending],
+            'sent to client' => [StatusEnum::SentToClient],
+        ];
+    }
+
+    /** @param list<ProductLine> $productLines */
+    private static function invoice(StatusEnum $status, array $productLines): Invoice
+    {
+        return Invoice::reconstitute(
+            InvoiceId::generate(),
+            'Acme Corp',
+            CustomerEmail::fromString('billing@acme.test'),
+            $status,
+            $productLines,
+        );
     }
 }
