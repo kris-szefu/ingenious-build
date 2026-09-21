@@ -16,4 +16,9 @@ final readonly class ProductLine
     {
         return $this->quantity * $this->unitPrice;
     }
+
+    public function hasPositiveAmounts(): bool
+    {
+        return $this->quantity > 0 && $this->unitPrice > 0;
+    }
 }

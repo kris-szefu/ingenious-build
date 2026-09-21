@@ -6,6 +6,7 @@ namespace Modules\Invoices\Domain\Entities;
 
 use Modules\Invoices\Domain\Enums\StatusEnum;
 use Modules\Invoices\Domain\Exceptions\InvalidStatusTransition;
+use Modules\Invoices\Domain\Exceptions\InvoiceCannotBeSent;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
 use Modules\Invoices\Domain\ValueObjects\ProductLine;
@@ -57,6 +58,14 @@ final class Invoice
     {
         if ($this->status !== StatusEnum::Draft) {
             throw InvalidStatusTransition::from($this->status, StatusEnum::Sending);
+        }
+
+        if ($this->productLines === []) {
+            throw InvoiceCannotBeSent::withoutProductLines();
+        }
+
+        if (! array_all($this->productLines, static fn (ProductLine $line): bool => $line->hasPositiveAmounts())) {
+            throw InvoiceCannotBeSent::withNonPositiveAmounts();
         }
 
         $this->status = StatusEnum::Sending;

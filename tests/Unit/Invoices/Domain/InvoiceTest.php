@@ -7,6 +7,7 @@ namespace Tests\Unit\Invoices\Domain;
 use Modules\Invoices\Domain\Entities\Invoice;
 use Modules\Invoices\Domain\Enums\StatusEnum;
 use Modules\Invoices\Domain\Exceptions\InvalidStatusTransition;
+use Modules\Invoices\Domain\Exceptions\InvoiceCannotBeSent;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
 use Modules\Invoices\Domain\ValueObjects\ProductLine;
@@ -134,6 +135,59 @@ final class InvoiceTest extends TestCase
         }
 
         $this->assertSame($status, $invoice->status);
+    }
+
+    #[Test]
+    public function an_invoice_without_product_lines_cannot_be_sent(): void
+    {
+        $invoice = self::invoice(StatusEnum::Draft, []);
+
+        try {
+            $invoice->send();
+            $this->fail('Expected InvoiceCannotBeSent.');
+        } catch (InvoiceCannotBeSent) {
+        }
+
+        $this->assertSame(StatusEnum::Draft, $invoice->status);
+    }
+
+    #[Test]
+    #[DataProvider('linesWithNonPositiveAmounts')]
+    public function an_invoice_with_a_non_positive_amount_cannot_be_sent(ProductLine ...$productLines): void
+    {
+        $invoice = self::invoice(StatusEnum::Draft, array_values($productLines));
+
+        try {
+            $invoice->send();
+            $this->fail('Expected InvoiceCannotBeSent.');
+        } catch (InvoiceCannotBeSent) {
+        }
+
+        $this->assertSame(StatusEnum::Draft, $invoice->status);
+    }
+
+    /** @return array<string, list<ProductLine>> */
+    public static function linesWithNonPositiveAmounts(): array
+    {
+        return [
+            'zero quantity' => [new ProductLine('Desk', 0, 15000)],
+            'zero unit price' => [new ProductLine('Desk', 2, 0)],
+            'negative quantity' => [new ProductLine('Desk', -1, 15000)],
+            'valid line followed by an invalid one' => [
+                new ProductLine('Desk', 2, 15000),
+                new ProductLine('Chair', 0, 7500),
+            ],
+        ];
+    }
+
+    #[Test]
+    public function the_status_rule_is_checked_before_the_product_lines(): void
+    {
+        $invoice = self::invoice(StatusEnum::Sending, []);
+
+        $this->expectException(InvalidStatusTransition::class);
+
+        $invoice->send();
     }
 
     /** @return array<string, array{StatusEnum}> */
