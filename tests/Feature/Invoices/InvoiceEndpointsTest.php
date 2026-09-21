@@ -71,6 +71,34 @@ final class InvoiceEndpointsTest extends TestCase
     }
 
     #[Test]
+    #[DataProvider('quantitiesThatAreNotJsonIntegers')]
+    public function it_rejects_amounts_that_are_not_json_integers(string $quantityJson): void
+    {
+        $this->call(
+            'POST',
+            '/api/invoices',
+            server: ['CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json'],
+            content: sprintf(
+                '{"customer_name":"Acme Corp","customer_email":"billing@acme.test","product_lines":[{"name":"Desk","quantity":%s,"unit_price":15000}]}',
+                $quantityJson,
+            ),
+        )
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['product_lines.0.quantity']);
+
+        $this->assertDatabaseCount('invoices', 0);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function quantitiesThatAreNotJsonIntegers(): array
+    {
+        return [
+            'numeric string' => ['"2"'],
+            'float with a zero fraction' => ['2.0'],
+        ];
+    }
+
+    #[Test]
     public function it_accepts_the_largest_amounts_and_computes_their_total(): void
     {
         $this->postJson('/api/invoices', [
