@@ -57,3 +57,17 @@ The Notification module included in this repository is a minimal, mock integrati
 
 * Start the project by running `./start.sh`.
 * To access the container environment, use: `docker compose exec app bash`.
+
+---
+
+## Some comments on how I worked on this task
+
+This is a test task, and working on one looks a bit different today than it did two years ago. I worked on it the way I usually work on a feature: decide the design first, write the decisions down, then implement in increments that are verifiable on their own - with an LLM as a pair throughout, for challenging my design decisions, for drafting specifications, and for the infrastructure and presentation boilerplate.
+
+The code I added is split into four layers. The Domain holds the invoice aggregate, its value objects, the status rules and the repository interface - it's plain PHP, so nothing from Laravel.
+The Application layer has one use case per action and the notifier port, and it doesn't depend on framework either.
+Only Infrastructure (Eloquent repository, the adapter to the Notifications plus the service provider) and Presentation (routes, controller, request validation etc) know the framework, so the domain and the use cases are unit tested without booting Laravel.
+
+Some of decisions that I made: a draft may hold a line that has a zero or negative amount. The task states positivity as a condition for sending, so send() method on invoice enforces it, together with the 'draft-only' and 'non empty' rules.
+Sending follows the order the task describes - domain rules, then the email, then the save, so a failed email leaves the invoice a draft that can be retried.   
+The Invoices module talks to Notifications through its own port and an adapter, and it listens to webhook event through a listener registered explicitly in a provider that is not deferred.
