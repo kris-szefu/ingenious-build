@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->dontReport(InvoiceNotFound::class);
+
         $exceptions->render(static fn (InvoiceNotFound $e, Request $request) => $request->expectsJson()
             ? response()->json(['message' => $e->getMessage()], Response::HTTP_NOT_FOUND)
             : null);

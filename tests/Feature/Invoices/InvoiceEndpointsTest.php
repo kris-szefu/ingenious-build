@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Invoices;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Exceptions;
+use Modules\Invoices\Application\Exceptions\InvoiceNotFound;
 use Modules\Invoices\Domain\Entities\Invoice;
 use Modules\Invoices\Domain\Repositories\InvoiceRepository;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
@@ -109,6 +111,17 @@ final class InvoiceEndpointsTest extends TestCase
     {
         $this->getJson('/api/invoices/'.InvoiceId::generate()->value)
             ->assertNotFound();
+    }
+
+    #[Test]
+    public function it_does_not_report_a_missing_invoice_as_an_error(): void
+    {
+        Exceptions::fake();
+
+        $this->getJson('/api/invoices/'.InvoiceId::generate()->value)
+            ->assertNotFound();
+
+        Exceptions::assertNotReported(InvoiceNotFound::class);
     }
 
     #[Test]
