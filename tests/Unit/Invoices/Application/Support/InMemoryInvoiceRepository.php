@@ -22,4 +22,9 @@ final class InMemoryInvoiceRepository implements InvoiceRepository
     {
         $this->invoices[$invoice->id->value] = $invoice;
     }
+
+    public function isEmpty(): bool
+    {
+        return $this->invoices === [];
+    }
 }

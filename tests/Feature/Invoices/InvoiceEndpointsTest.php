@@ -18,6 +18,71 @@ final class InvoiceEndpointsTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
+    public function it_creates_a_draft_invoice_with_product_lines(): void
+    {
+        $response = $this->postJson('/api/invoices', [
+            'customer_name' => 'Acme Corp',
+            'customer_email' => 'billing@acme.test',
+            'product_lines' => [
+                ['name' => 'Desk', 'quantity' => 2, 'unit_price' => 15000],
+                ['name' => 'Chair', 'quantity' => 4, 'unit_price' => 7500],
+            ],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('status', 'draft')
+            ->assertJsonPath('customer_name', 'Acme Corp')
+            ->assertJsonPath('product_lines.1.total_unit_price', 30000)
+            ->assertJsonPath('total_price', 60000);
+
+        $this->assertDatabaseCount('invoices', 1);
+        $this->assertDatabaseCount('invoice_product_lines', 2);
+    }
+
+    #[Test]
+    public function it_creates_an_invoice_without_product_lines(): void
+    {
+        $this->postJson('/api/invoices', [
+            'customer_name' => 'Acme Corp',
+            'customer_email' => 'billing@acme.test',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('product_lines', [])
+            ->assertJsonPath('total_price', 0);
+    }
+
+    #[Test]
+    public function it_rejects_invalid_input(): void
+    {
+        $this->postJson('/api/invoices', [
+            'customer_name' => '',
+            'customer_email' => 'not-an-email',
+            'product_lines' => [
+                ['name' => 'Desk', 'quantity' => 'two', 'unit_price' => 15000],
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'customer_name',
+                'customer_email',
+                'product_lines.0.quantity',
+            ]);
+    }
+
+    #[Test]
+    public function it_rejects_an_email_the_domain_would_reject(): void
+    {
+        $this->postJson('/api/invoices', [
+            'customer_name' => 'Acme Corp',
+            'customer_email' => 'billing@acme',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['customer_email']);
+
+        $this->assertDatabaseCount('invoices', 0);
+    }
+
+    #[Test]
     public function it_returns_an_invoice(): void
     {
         $invoice = Invoice::create(
