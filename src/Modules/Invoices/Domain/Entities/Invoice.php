@@ -71,6 +71,15 @@ final class Invoice
         $this->status = StatusEnum::Sending;
     }
 
+    public function markAsSentToClient(): void
+    {
+        if ($this->status !== StatusEnum::Sending) {
+            throw InvalidStatusTransition::from($this->status, StatusEnum::SentToClient);
+        }
+
+        $this->status = StatusEnum::SentToClient;
+    }
+
     public function totalPrice(): int
     {
         return array_reduce(

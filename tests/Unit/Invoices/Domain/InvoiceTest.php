@@ -190,6 +190,40 @@ final class InvoiceTest extends TestCase
         $invoice->send();
     }
 
+    #[Test]
+    public function a_sending_invoice_can_be_marked_as_sent_to_client(): void
+    {
+        $invoice = self::invoice(StatusEnum::Sending, [new ProductLine('Desk', 2, 15000)]);
+
+        $invoice->markAsSentToClient();
+
+        $this->assertSame(StatusEnum::SentToClient, $invoice->status);
+    }
+
+    #[Test]
+    #[DataProvider('statusesOtherThanSending')]
+    public function only_a_sending_invoice_can_be_marked_as_sent_to_client(StatusEnum $status): void
+    {
+        $invoice = self::invoice($status, [new ProductLine('Desk', 2, 15000)]);
+
+        try {
+            $invoice->markAsSentToClient();
+            $this->fail('Expected InvalidStatusTransition.');
+        } catch (InvalidStatusTransition) {
+        }
+
+        $this->assertSame($status, $invoice->status);
+    }
+
+    /** @return array<string, array{StatusEnum}> */
+    public static function statusesOtherThanSending(): array
+    {
+        return [
+            'draft' => [StatusEnum::Draft],
+            'sent to client' => [StatusEnum::SentToClient],
+        ];
+    }
+
     /** @return array<string, array{StatusEnum}> */
     public static function statusesOtherThanDraft(): array
     {
