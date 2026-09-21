@@ -15,12 +15,14 @@ final class InMemoryInvoiceRepository implements InvoiceRepository
 
     public function find(InvoiceId $id): ?Invoice
     {
-        return $this->invoices[$id->value] ?? null;
+        $invoice = $this->invoices[$id->value] ?? null;
+
+        return $invoice === null ? null : clone $invoice;
     }
 
     public function save(Invoice $invoice): void
     {
-        $this->invoices[$invoice->id->value] = $invoice;
+        $this->invoices[$invoice->id->value] = clone $invoice;
     }
 
     public function isEmpty(): bool
