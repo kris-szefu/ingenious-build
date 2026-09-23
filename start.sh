@@ -1,9 +1,9 @@
-#! /bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-cp .env.example .env
+cp -n .env.example .env
 touch database/database.sqlite
-composer install --ignore-platform-reqs
+
 docker compose up --build --remove-orphans -d
-docker compose run app composer install
-docker compose run app cp -n .env.example .env
-docker compose run app php artisan migrate:fresh --seed
+docker compose exec -T app composer install
+docker compose exec -T app php artisan migrate:fresh --seed
