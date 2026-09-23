@@ -17,7 +17,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('invoice_id');
             $table->string('name');
-            $table->integer('price');
+            $table->integer('unit_price');
             $table->integer('quantity');
             $table->timestamps();
 
