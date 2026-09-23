@@ -11,5 +11,5 @@ interface DriverInterface
         string $subject,
         string $message,
         string $reference,
-    ): bool;
+    ): void;
 }

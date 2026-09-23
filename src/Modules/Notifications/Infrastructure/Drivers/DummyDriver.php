@@ -11,7 +11,6 @@ final class DummyDriver implements DriverInterface
         string $subject,
         string $message,
         string $reference,
-    ): bool {
-        return true;
+    ): void {
     }
 }
