@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Notifications\Application\Facades;
 
-use Modules\Notifications\Api\Dtos\NotifyData;
+use Modules\Notifications\Api\Data\NotifyData;
 use Modules\Notifications\Api\NotificationFacadeInterface;
 use Modules\Notifications\Infrastructure\Drivers\DriverInterface;
 

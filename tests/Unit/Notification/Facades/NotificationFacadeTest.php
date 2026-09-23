@@ -6,7 +6,7 @@ namespace Tests\Unit\Notification\Facades;
 
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Str;
-use Modules\Notifications\Api\Dtos\NotifyData;
+use Modules\Notifications\Api\Data\NotifyData;
 use Modules\Notifications\Application\Facades\NotificationFacade;
 use Modules\Notifications\Infrastructure\Drivers\DriverInterface;
 use PHPUnit\Framework\TestCase;

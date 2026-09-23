@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Notifications\Api;
 
-use Modules\Notifications\Api\Dtos\NotifyData;
+use Modules\Notifications\Api\Data\NotifyData;
 
 interface NotificationFacadeInterface
 {
