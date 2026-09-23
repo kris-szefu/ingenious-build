@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Notifications\Infrastructure\Drivers;
 
-class DummyDriver implements DriverInterface
+final class DummyDriver implements DriverInterface
 {
     public function send(
         string $toEmail,
