@@ -5,47 +5,51 @@ declare(strict_types=1);
 namespace Tests\Feature\Notification\Http;
 
 use Illuminate\Foundation\Testing\WithFaker;
-use PHPUnit\Framework\Attributes\DataProvider;
+use Illuminate\Support\Facades\Event;
+use Modules\Notifications\Api\Events\WebhookDeliveredEvent;
 use Tests\TestCase;
 
-class NotificationControllerTest extends TestCase
+final class NotificationControllerTest extends TestCase
 {
     use WithFaker;
 
     protected function setUp(): void
     {
-        $this->setUpFaker();
-
         parent::setUp();
+        $this->setUpFaker();
     }
 
-    #[DataProvider('hookActionProvider')]
-    public function testHook(string $action): void
+    public function testDeliveredHookDispatchesEvent(): void
     {
+        Event::fake([WebhookDeliveredEvent::class]);
+
         $uri = route('notification.hook', [
-            'action' => $action,
-            'reference' => $this->faker->uuid,
+            'action' => 'delivered',
+            'reference' => $this->faker->uuid(),
         ]);
 
-        $this->getJson($uri)->assertOk();
+        $this->getJson($uri)->assertNoContent();
+
+        Event::assertDispatched(WebhookDeliveredEvent::class);
     }
 
-    public function testInvalid(): void
+    public function testUnknownActionReturnsNotFound(): void
     {
-        $params = [
-            'action' => 'dummy',
-            'reference' => $this->faker->numberBetween(),
-        ];
+        $uri = route('notification.hook', [
+            'action' => 'unknownaction',
+            'reference' => $this->faker->uuid(),
+        ]);
 
-        $uri = route('notification.hook', $params);
         $this->getJson($uri)->assertNotFound();
     }
 
-    public static function hookActionProvider(): array
+    public function testInvalidReferencePatternReturnsNotFound(): void
     {
-        return [
-            ['delivered'],
-            ['dummy'],
-        ];
+        $uri = route('notification.hook', [
+            'action' => 'delivered',
+            'reference' => 'not-a-uuid',
+        ]);
+
+        $this->getJson($uri)->assertNotFound();
     }
 }
