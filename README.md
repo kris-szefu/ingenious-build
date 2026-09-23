@@ -46,8 +46,15 @@ The invoice should contain the following fields:
 
 * **Preferred Approach**: Domain-Driven Design (DDD) is preferred for this project. If you have experience with DDD, please feel free to apply this methodology. However, if you are more comfortable with another approach, you may choose an alternative structure.
 * **Alternative Submission**: If you have a different, comparable project or task that showcases your skills, you may submit that instead of creating this task.
-* **Unit Tests**: Core invoice logic should be unit tested. Testing the returned values from endpoints is not required.
+* **Tests**: Core invoice logic must be covered by tests. Choose the testing strategy that best demonstrates the correctness of your solution.
 * **Documentation**: Candidates are encouraged to document their decisions and reasoning in comments or a README file, explaining why specific implementations or structures were chosen.
+
+## Evaluation Criteria
+
+We look at the overall shape of the solution, not a checklist. In particular:
+* Architecture, separation of concerns, and clarity of module boundaries.
+* Testing strategy — what you chose to test and why.
+* How the send/deliver workflow behaves when things do not go as expected.
 
 ## Note on the Notification Module:
 
