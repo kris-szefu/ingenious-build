@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Modules\Notifications\Api\Events\WebhookDeliveredEvent;
 use Modules\Notifications\Application\Services\NotificationService;
 use PHPUnit\Framework\TestCase;
+use Ramsey\Uuid\Uuid;
 
 final class NotificationServiceTest extends TestCase
 {
@@ -32,6 +33,6 @@ final class NotificationServiceTest extends TestCase
             ->method('dispatch')
             ->with($this->isInstanceOf(WebhookDeliveredEvent::class));
 
-        $this->notificationService->delivered($this->faker->uuid());
+        $this->notificationService->delivered(Uuid::fromString($this->faker->uuid()));
     }
 }

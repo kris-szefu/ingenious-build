@@ -6,7 +6,7 @@ namespace Modules\Notifications\Application\Services;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Modules\Notifications\Api\Events\WebhookDeliveredEvent;
-use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 
 final readonly class NotificationService
 {
@@ -14,10 +14,10 @@ final readonly class NotificationService
         private Dispatcher $dispatcher,
     ) {}
 
-    public function delivered(string $reference): void
+    public function delivered(UuidInterface $reference): void
     {
         $this->dispatcher->dispatch(new WebhookDeliveredEvent(
-            resourceId: Uuid::fromString($reference),
+            resourceId: $reference,
         ));
     }
 }
