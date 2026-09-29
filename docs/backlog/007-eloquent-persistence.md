@@ -1,3 +1,19 @@
+# 007 — Eloquent persistence adapter
+
+## Story
+As the module, I want a real database-backed repository, so that invoices persist across requests.
+
+## Addresses (README requirements)
+- Enabler for all three endpoints.
+- "Invoice ID: Auto-generated during creation."
+
+## Scope
+- In:
+  - Inspect existing migrations (`create_invoices_table`, `create_invoice_product_lines_table`); align or add a follow-up migration if fields (e.g. `status`, `customer_email`) are missing.
+  - `Infrastructure/Eloquent/InvoiceModel`, `InvoiceProductLineModel` with `$fillable` and `casts()` for `StatusEnum`.
+  - `Infrastructure/Repositories/EloquentInvoiceRepository` mapping model ↔ domain entity, writes in `DB::transaction()`.
+  - `Infrastructure/Ids/UuidGenerator` implementing `IdGeneratorInterface`.
+  - Bind ports in `InvoiceServiceProvider::register()`.
 - Out:
   - Controllers (stories 008/009/011).
 
@@ -20,20 +36,4 @@
 
 ## Status
 todo
-# 007 — Eloquent persistence adapter
-
-## Story
-As the module, I want a real database-backed repository, so that invoices persist across requests.
-
-## Addresses (README requirements)
-- Enabler for all three endpoints.
-- "Invoice ID: Auto-generated during creation."
-
-## Scope
-- In:
-  - Inspect existing migrations (`create_invoices_table`, `create_invoice_product_lines_table`); align or add a follow-up migration if fields (e.g. `status`, `customer_email`) are missing.
-  - `Infrastructure/Eloquent/InvoiceModel`, `InvoiceProductLineModel` with `$fillable` and `casts()` for `StatusEnum`.
-  - `Infrastructure/Repositories/EloquentInvoiceRepository` mapping model ↔ domain entity, writes in `DB::transaction()`.
-  - `Infrastructure/Ids/UuidGenerator` implementing `IdGeneratorInterface`.
-  - Bind ports in `InvoiceServiceProvider::register()`.
 
