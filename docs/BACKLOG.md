@@ -23,9 +23,10 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 | 013 | ADR + architecture docs | [013](./backlog/013-adr-and-architecture-docs.md) | `docs(invoices): add ADR and update architecture docs` | todo | |
 | 014 | Final quality pass | [014](./backlog/014-final-quality-pass.md) | `chore(quality): pint and final test pass` | todo | |
 | 015 | Spike: external state-machine library | [015](./backlog/015-spike-state-machine-library.md) | `docs(invoices): spike external state-machine options (ADR)` | todo | Deferred follow-up to 003 |
+| 016 | Spike: OpenAPI strategy | [016](./backlog/016-spike-openapi-strategy.md) | `docs(invoices): spike openapi strategy (ADR)` | todo | Decide contract-first vs annotation vs skip |
 
 ## Progress
-- Total: 15
+- Total: 16
 - Done: 6
 - In progress: 0
 - Blocked: 0
@@ -34,6 +35,7 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 Append one line per status change (newest first):
 
 ```
+2026-09-29  016  created            docs(invoices): spike openapi strategy (backlog entry)
 2026-09-29  006  in-progress → done  feat(invoices): view-invoice use-case
 2026-09-29  006  todo → in-progress  view-invoice use-case (read DTO + handler)
 2026-09-29  005  in-progress → done  feat(invoices): create-invoice use-case
