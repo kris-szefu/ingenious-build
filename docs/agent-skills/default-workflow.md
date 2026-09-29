@@ -27,15 +27,21 @@ Default for any task unless a more specific skill is requested.
    - Re-run `module-boundaries-guardrails.md` and `php-and-laravel-guardrails.md` on the diff.
    - Confirm test coverage for happy path, validation errors, and illegal state transitions.
    - Write the `Decision & Docs Impact` note (see `adr-architecture-guardrails.md`).
-9. **🛑 Review breakpoint — STOP HERE**:
-   - Summarize for the reviewer: files changed, tests added/run (paste last lines of `php artisan test`), `vendor/bin/pint --test` result on touched paths, guardrail re-check, and the proposed commit message quoted verbatim.
-   - Show `git status` and `git --no-pager diff --stat`. Offer `git --no-pager diff` on request.
-   - **Do not `git add`. Do not `git commit`.** Wait for explicit user approval (e.g. "commit", "ship it", "lgtm").
-   - On rejection: address feedback (loop back to step 4 or 6) and re-enter this breakpoint. If the task is a backlog item and status was already flipped to `done`, revert it to `in-progress` per `backlog-status.md`.
-10. **Commit** (only after explicit approval):
-    - `git add` the exact paths listed in the review summary.
+9. **Sync backlog + task file** (backlog items only, before the review breakpoint — see `backlog-status.md` for the exact edits):
+   - Tick every satisfied `Acceptance criteria` checkbox on `docs/backlog/NNN-*.md`. If any is not satisfied, either finish it or split the task; do not proceed.
+   - Flip `## Status` to `done` on the task file **and** the matching row in `docs/BACKLOG.md`.
+   - Update `Progress` counters in `docs/BACKLOG.md`.
+   - Append a change-log line in `docs/BACKLOG.md` with the proposed commit subject; leave the SHA as `<pending>`.
+   - These edits ship **in the same commit** as the implementation — include them in the review summary and the staged paths.
+10. **🛑 Review breakpoint — STOP HERE**:
+    - Summarize for the reviewer: files changed (implementation **and** backlog/task file updates), tests added/run (paste last lines of `php artisan test`), `vendor/bin/pint --test` result on touched paths, guardrail re-check, and the proposed commit message quoted verbatim.
+    - Show `git status` and `git --no-pager diff --stat`. Offer `git --no-pager diff` on request.
+    - **Do not `git add`. Do not `git commit`.** Wait for explicit user approval (e.g. "commit", "ship it", "lgtm").
+    - On rejection: address feedback (loop back to step 4 or 6) and re-enter this breakpoint. If status was already flipped to `done`, revert it to `in-progress` per `backlog-status.md` (both task file + `BACKLOG.md` row + progress counters).
+11. **Commit** (only after explicit approval):
+    - `git add` the exact paths listed in the review summary — implementation files **plus** `docs/BACKLOG.md` and `docs/backlog/NNN-*.md` for backlog items.
     - `git commit` with the pre-approved message.
-    - Report the resulting SHA. For backlog items, backfill the SHA into the `docs/BACKLOG.md` change-log line.
+    - Report the resulting SHA. For backlog items, backfill the SHA into the `<pending>` change-log line in `docs/BACKLOG.md` and amend the commit (`git commit --amend --no-edit`) so the SHA lives in the same commit.
 
 ## Commit messages
 Follow the Conventional Commits style already used in this repo (e.g. `chore(build): bump to PHP 8.5, refresh deps, simplify start.sh`, `docs(readme): reword testing scope and add evaluation criteria`).
