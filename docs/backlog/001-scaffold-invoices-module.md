@@ -17,9 +17,9 @@ As a developer, I want the Invoices module folder skeleton and service provider 
   - Any domain code, endpoints, or persistence.
 
 ## Acceptance criteria
-- [ ] `php artisan route:list` runs without errors.
-- [ ] Provider registered; app boots.
-- [ ] Folder layout matches `docs/agent-skills/architecture.md`.
+- [x] `php artisan route:list` runs without errors.
+- [x] Provider registered; app boots.
+- [x] Folder layout matches `docs/agent-skills/architecture.md`.
 
 ## Tests
 - Unit: none.
@@ -33,5 +33,4 @@ As a developer, I want the Invoices module folder skeleton and service provider 
 `chore(invoices): scaffold module skeleton`
 
 ## Status
-todo
-
+done
