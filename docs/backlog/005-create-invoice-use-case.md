@@ -16,9 +16,9 @@ As an API client, I want to create a draft invoice (optionally with product line
   - HTTP layer (story 008).
 
 ## Acceptance criteria
-- [ ] Creating with zero lines succeeds and status = `draft`.
-- [ ] Creating with valid lines succeeds and totals compute.
-- [ ] Invalid line values are rejected at VO construction (`InvalidProductLine`).
+- [x] Creating with zero lines succeeds and status = `draft`.
+- [x] Creating with valid lines succeeds and totals compute.
+- [x] Invalid line values are rejected at VO construction (`InvalidProductLine`).
 
 ## Tests
 - Unit `tests/Unit/Invoices/Application/`:
@@ -34,5 +34,4 @@ As an API client, I want to create a draft invoice (optionally with product line
 `feat(invoices): create-invoice use-case`
 
 ## Status
-todo
-
+done
