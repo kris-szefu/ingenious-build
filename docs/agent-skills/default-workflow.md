@@ -27,6 +27,15 @@ Default for any task unless a more specific skill is requested.
    - Re-run `module-boundaries-guardrails.md` and `php-and-laravel-guardrails.md` on the diff.
    - Confirm test coverage for happy path, validation errors, and illegal state transitions.
    - Write the `Decision & Docs Impact` note (see `adr-architecture-guardrails.md`).
+9. **🛑 Review breakpoint — STOP HERE**:
+   - Summarize for the reviewer: files changed, tests added/run (paste last lines of `php artisan test`), `vendor/bin/pint --test` result on touched paths, guardrail re-check, and the proposed commit message quoted verbatim.
+   - Show `git status` and `git --no-pager diff --stat`. Offer `git --no-pager diff` on request.
+   - **Do not `git add`. Do not `git commit`.** Wait for explicit user approval (e.g. "commit", "ship it", "lgtm").
+   - On rejection: address feedback (loop back to step 4 or 6) and re-enter this breakpoint. If the task is a backlog item and status was already flipped to `done`, revert it to `in-progress` per `backlog-status.md`.
+10. **Commit** (only after explicit approval):
+    - `git add` the exact paths listed in the review summary.
+    - `git commit` with the pre-approved message.
+    - Report the resulting SHA. For backlog items, backfill the SHA into the `docs/BACKLOG.md` change-log line.
 
 ## Commit messages
 Follow the Conventional Commits style already used in this repo (e.g. `chore(build): bump to PHP 8.5, refresh deps, simplify start.sh`, `docs(readme): reword testing scope and add evaluation criteria`).

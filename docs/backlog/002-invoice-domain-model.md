@@ -20,10 +20,10 @@ As a domain modeler, I want invoice entities and value objects with enforced inv
   - Persistence (story 007).
 
 ## Acceptance criteria
-- [ ] `Quantity`/`UnitPrice` throw `InvalidProductLine` when ≤ 0.
-- [ ] `Invoice::totalPrice()` = Σ line totals.
-- [ ] All classes `final`, `readonly` where possible, `declare(strict_types=1)`.
-- [ ] No `Illuminate\*` imports in `Domain/`.
+- [x] `Quantity`/`UnitPrice` throw `InvalidProductLine` when ≤ 0.
+- [x] `Invoice::totalPrice()` = Σ line totals.
+- [x] All classes `final`, `readonly` where possible, `declare(strict_types=1)`.
+- [x] No `Illuminate\*` imports in `Domain/`.
 
 ## Tests
 - Unit `tests/Unit/Invoices/Domain/`:
@@ -39,5 +39,4 @@ As a domain modeler, I want invoice entities and value objects with enforced inv
 `feat(invoices): model invoice domain`
 
 ## Status
-todo
-
+done

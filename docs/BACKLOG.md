@@ -9,7 +9,7 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 | # | Task | File | Commit | Status | Notes |
 |---|------|------|--------|--------|-------|
 | 001 | Scaffold Invoices module | [001](./backlog/001-scaffold-invoices-module.md) | `chore(invoices): scaffold module skeleton` | done | |
-| 002 | Invoice domain model | [002](./backlog/002-invoice-domain-model.md) | `feat(invoices): model invoice domain` | todo | |
+| 002 | Invoice domain model | [002](./backlog/002-invoice-domain-model.md) | `feat(invoices): model invoice domain` | done | |
 | 003 | Invoice state machine | [003](./backlog/003-invoice-state-machine.md) | `feat(invoices): invoice state machine` | todo | |
 | 004 | Application ports | [004](./backlog/004-application-ports.md) | `feat(invoices): application ports` | todo | |
 | 005 | Create-invoice use-case | [005](./backlog/005-create-invoice-use-case.md) | `feat(invoices): create-invoice use-case` | todo | |
@@ -25,7 +25,7 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 
 ## Progress
 - Total: 14
-- Done: 1
+- Done: 2
 - In progress: 0
 - Blocked: 0
 
@@ -33,6 +33,8 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 Append one line per status change (newest first):
 
 ```
+2026-09-29  002  in-progress → done   feat(invoices): model invoice domain
+2026-09-29  002  todo → in-progress   model invoice domain (VOs + entities)
 2026-09-29  001  in-progress → done   chore(invoices): scaffold module skeleton
 2026-09-29  001  todo → in-progress   scaffold Invoices module skeleton
 YYYY-MM-DD  NNN  todo → in-progress   short reason

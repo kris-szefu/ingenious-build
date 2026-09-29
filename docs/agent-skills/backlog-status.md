@@ -17,28 +17,22 @@ Keep task statuses in `docs/BACKLOG.md` and the individual task files under `doc
    ```
    YYYY-MM-DD  NNN  todo → in-progress   <reason>
    ```
-3. **Do the work** following `default-workflow.md` and the guardrails listed on the task file.
-4. **Finish**: before staging the commit:
+3. **Do the work** following `default-workflow.md` and the guardrails listed on the task file. The review breakpoint and commit rules live in `default-workflow.md` — do not duplicate them here.
+4. **Prepare to finish** (before entering the review breakpoint in `default-workflow.md`):
    - Tick every `Acceptance criteria` checkbox that is satisfied. If any is not, either finish it or split the task.
-   - Set `Status: done` in both files.
+   - Set `Status: done` in both the task file and the `docs/BACKLOG.md` row.
    - Update the `Progress` counters in `docs/BACKLOG.md`.
-   - Add a change-log line with the commit subject (sha added post-commit, optional).
-5. **Commit**: status changes ship **in the same commit** as the code (or as the only content for docs-only tasks).
-6. **Blocked/skipped**: set the status and add a one-liner explaining why + link to the blocker.
+   - Append a change-log line with the commit subject; leave SHA as `<pending>` until after the commit.
+5. **On rejection at the review breakpoint**: revert the `done` flip back to `in-progress` (both files + progress counters), address feedback, then re-enter the breakpoint.
+6. **After commit**: backfill the commit SHA into the change-log line.
+7. **Blocked/skipped**: set the status and add a one-liner explaining why + link to the blocker.
 
 ## Rules
 - Never mark `done` if any acceptance-criteria checkbox is unchecked.
 - Never have more than **one** task in `in-progress` at a time (keeps the story-per-commit discipline).
 - Task file `Status` and `BACKLOG.md` row must always agree — if they disagree, the task file wins and `BACKLOG.md` must be fixed immediately.
+- Status changes ship **in the same commit** as the code (or as the only content for docs-only tasks).
 - If a task grows past one commit, split into `NNN-a`, `NNN-b`; do not carry a `done` status forward on partial work.
-
-## Pre-commit checklist
-- [ ] Task file acceptance criteria all checked (or task split).
-- [ ] Task file `Status` updated.
-- [ ] `docs/BACKLOG.md` row `Status` updated.
-- [ ] `docs/BACKLOG.md` `Progress` counters updated.
-- [ ] Change-log line appended in `docs/BACKLOG.md`.
 
 ## Output
 A commit whose diff includes both the implementation and the synchronized status update. Reviewers can read `docs/BACKLOG.md` and trust it.
-
