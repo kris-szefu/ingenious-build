@@ -15,8 +15,8 @@ As an API client, I want to fetch an invoice with all fields the README lists, s
   - HTTP shell (story 009).
 
 ## Acceptance criteria
-- [ ] DTO shape includes `id`, `status`, `customer_name`, `customer_email`, `product_lines[]` (with `product_name`, `quantity`, `unit_price`, `total_unit_price`), and `total_price`.
-- [ ] Missing invoice → `InvoiceNotFound`.
+- [x] DTO shape includes `id`, `status`, `customer_name`, `customer_email`, `product_lines[]` (with `product_name`, `quantity`, `unit_price`, `total_unit_price`), and `total_price`.
+- [x] Missing invoice → `InvoiceNotFound`.
 
 ## Tests
 - Unit:
@@ -30,5 +30,4 @@ As an API client, I want to fetch an invoice with all fields the README lists, s
 `feat(invoices): view-invoice use-case`
 
 ## Status
-todo
-
+done
