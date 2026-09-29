@@ -10,7 +10,7 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 |---|------|------|--------|--------|-------|
 | 001 | Scaffold Invoices module | [001](./backlog/001-scaffold-invoices-module.md) | `chore(invoices): scaffold module skeleton` | done | |
 | 002 | Invoice domain model | [002](./backlog/002-invoice-domain-model.md) | `feat(invoices): model invoice domain` | done | |
-| 003 | Invoice state machine | [003](./backlog/003-invoice-state-machine.md) | `feat(invoices): invoice state machine` | todo | |
+| 003 | Invoice state machine | [003](./backlog/003-invoice-state-machine.md) | `feat(invoices): invoice state machine` | done | |
 | 004 | Application ports | [004](./backlog/004-application-ports.md) | `feat(invoices): application ports` | todo | |
 | 005 | Create-invoice use-case | [005](./backlog/005-create-invoice-use-case.md) | `feat(invoices): create-invoice use-case` | todo | |
 | 006 | View-invoice use-case | [006](./backlog/006-view-invoice-use-case.md) | `feat(invoices): view-invoice use-case` | todo | |
@@ -22,10 +22,11 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 | 012 | Webhook delivered listener | [012](./backlog/012-delivery-event-listener.md) | `feat(invoices): react to webhook delivered event` | todo | |
 | 013 | ADR + architecture docs | [013](./backlog/013-adr-and-architecture-docs.md) | `docs(invoices): add ADR and update architecture docs` | todo | |
 | 014 | Final quality pass | [014](./backlog/014-final-quality-pass.md) | `chore(quality): pint and final test pass` | todo | |
+| 015 | Spike: external state-machine library | [015](./backlog/015-spike-state-machine-library.md) | `docs(invoices): spike external state-machine options (ADR)` | todo | Deferred follow-up to 003 |
 
 ## Progress
-- Total: 14
-- Done: 2
+- Total: 15
+- Done: 3
 - In progress: 0
 - Blocked: 0
 
@@ -33,6 +34,9 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 Append one line per status change (newest first):
 
 ```
+2026-09-29  015  created              docs(invoices): spike external state-machine options (backlog entry)
+2026-09-29  003  in-progress → done   feat(invoices): invoice state machine
+2026-09-29  003  todo → in-progress   invoice state machine (transitions + guards)
 2026-09-29  002  in-progress → done   feat(invoices): model invoice domain
 2026-09-29  002  todo → in-progress   model invoice domain (VOs + entities)
 2026-09-29  001  in-progress → done   chore(invoices): scaffold module skeleton

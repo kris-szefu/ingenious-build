@@ -21,11 +21,10 @@ final class InvoiceTest extends TestCase
     #[Test]
     public function total_price_sums_product_line_totals(): void
     {
-        $invoice = new Invoice(
+        $invoice = Invoice::draft(
             InvoiceId::generate(),
             new CustomerName('Ada Lovelace'),
             new CustomerEmail('ada@example.com'),
-            StatusEnum::Draft,
             [
                 new ProductLine(new ProductName('A'), new Quantity(2), new UnitPrice(300)),
                 new ProductLine(new ProductName('B'), new Quantity(5), new UnitPrice(100)),
@@ -38,11 +37,10 @@ final class InvoiceTest extends TestCase
     #[Test]
     public function total_price_is_zero_when_there_are_no_product_lines(): void
     {
-        $invoice = new Invoice(
+        $invoice = Invoice::draft(
             InvoiceId::generate(),
             new CustomerName('Ada Lovelace'),
             new CustomerEmail('ada@example.com'),
-            StatusEnum::Draft,
         );
 
         self::assertSame(0, $invoice->totalPrice());

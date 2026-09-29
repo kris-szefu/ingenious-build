@@ -37,5 +37,4 @@ As the domain, I want explicit state transitions with typed exceptions, so that 
 `feat(invoices): invoice state machine`
 
 ## Status
-todo
-
+done
