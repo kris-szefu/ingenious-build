@@ -16,9 +16,9 @@ As the application layer, I want repository and id-generator ports declared, so 
   - Eloquent implementation (story 007).
 
 ## Acceptance criteria
-- [ ] Interfaces live in `Application/Ports/`.
-- [ ] Repo throws `InvoiceNotFound` (never returns null).
-- [ ] Fake repo used by unit tests in later stories.
+- [x] Interfaces live in `Application/Ports/`.
+- [x] Repo throws `InvoiceNotFound` (never returns null).
+- [x] Fake repo used by unit tests in later stories.
 
 ## Tests
 - Unit: sanity test on the in-memory fake (save + fetch + not-found).
@@ -31,5 +31,4 @@ As the application layer, I want repository and id-generator ports declared, so 
 `feat(invoices): application ports`
 
 ## Status
-todo
-
+done
