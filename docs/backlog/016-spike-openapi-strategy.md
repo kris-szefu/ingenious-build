@@ -22,11 +22,13 @@ As the maintainer, I want to evaluate whether adopting OpenAPI as the source of 
   - GraphQL / JSON:API alternatives.
 
 ## Acceptance criteria
-- [ ] `docs/adr/NNNN-openapi-strategy.md` written, following `adr-architecture-guardrails.md`, with: context, options evaluated, decision, consequences, and a link to the prototype branch/commit (or a code snippet if the prototype was thrown away).
-- [ ] Decision explicitly answers: (a) do we ship a spec with the submission? (b) if yes, hand-authored vs generated? (c) do we generate code from the spec, and where does it live relative to module boundaries?
-- [ ] If decision is **adopt**: follow-up backlog task(s) created (e.g. `017-openapi-spec`, `018-openapi-ci-check`) with clear scope.
-- [ ] If decision is **adopt-later** or **skip**: rationale recorded in the ADR so we don't re-open the debate on a whim.
-- [ ] No production code merged from this spike; only the ADR (and follow-up task files) land on the main branch.
+- [x] `docs/adr/0001-openapi-strategy.md` written, following `adr-architecture-guardrails.md`, with: context, options evaluated, decision, consequences, and a prototype code snippet (spike thrown away, no branch merged).
+- [x] Decision explicitly answers: (a) ship a spec — **yes**; (b) hand-authored vs generated — **hand-authored YAML is the contract and the generated DTOs are derived from it**; (c) generate code from the spec — **yes**; generated DTOs live in `src/Modules/Invoices/Presentation/Http/Generated/` as infrastructure output, not in `Application/` or `Domain/`.
+- [x] Follow-up backlog tasks created: [017 — OpenAPI spec](./017-openapi-spec.md), [018 — OpenAPI CI check](./018-openapi-ci-check.md).
+- [x] No production code merged from this spike; only the ADR and follow-up task files land on the main branch.
+
+## Outcome
+**Adopt (Option D — contract-first with generated DTOs).** See [ADR 0001](../adr/0001-openapi-strategy.md). `docs/api/openapi.yaml` is the source of truth; `jane-php/open-api` generates typed PHP DTOs and serializer support into `src/Modules/Invoices/Presentation/Http/Generated/`; hand-written assemblers/serializers translate between generated DTOs and the existing Application DTOs (`CreateInvoiceCommand`, `InvoiceView`) so that `Application/` and `Domain/` never import generated code. Scramble (Option C) and annotations (Option B) are rejected; hand-authored-only (Option A) is retained only as the specification authoring step, with generation as an explicit infrastructure step.
 
 ## Tests
 - N/A (spike). The prototype does not need tests; the ADR is the deliverable.
@@ -39,5 +41,4 @@ As the maintainer, I want to evaluate whether adopting OpenAPI as the source of 
 `docs(invoices): spike openapi strategy (ADR)`
 
 ## Status
-todo
-
+done

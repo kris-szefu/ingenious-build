@@ -16,7 +16,7 @@ Before implementation and on every diff.
 - [ ] Business rules and state transitions live in `Domain`, not in controllers, listeners, or Eloquent models.
 - [ ] Domain events dispatched from `Domain`/`Application`; framework wiring in a `ServiceProvider`.
 - [ ] Listeners for another module's events live in the *consuming* module's `Infrastructure`/`Application` and consume only `Api\Events\*`.
+- [ ] Generated OpenAPI DTOs live under `Presentation\Http\Generated\` and are **not** referenced from `Domain\`, `Application\`, `Infrastructure\`, or any other module. Only `Presentation\Http\Controllers\` and `Presentation\Http\Assemblers\` may import them. See [ADR 0001](../adr/0001-openapi-strategy.md).
 
 ## Output
 Pass/fail per item; concrete file references for failures.
-
