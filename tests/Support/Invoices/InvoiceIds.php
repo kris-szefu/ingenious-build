@@ -18,4 +18,3 @@ final class InvoiceIds
         return InvoiceId::fromString(Uuid::uuid4()->toString());
     }
 }
-

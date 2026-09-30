@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Invoices\Infrastructure\Repositories;
 
+use Closure;
 use Illuminate\Support\Facades\DB;
 use Modules\Invoices\Application\Ports\InvoiceRepositoryInterface;
 use Modules\Invoices\Domain\Entities\Invoice;
@@ -37,32 +38,61 @@ final class EloquentInvoiceRepository implements InvoiceRepositoryInterface
     public function save(Invoice $invoice): void
     {
         DB::transaction(function () use ($invoice): void {
-            InvoiceModel::query()->updateOrCreate(
-                ['id' => $invoice->id->value],
-                [
-                    'customer_name' => $invoice->customerName->value,
-                    'customer_email' => $invoice->customerEmail->value,
-                    'status' => $invoice->status(),
-                ],
-            );
-
-            // Full-replace strategy for product lines: simple and safe for the
-            // draft-only write path of the current use-cases. Revisit if we
-            // ever mutate individual lines after send.
-            InvoiceProductLineModel::query()
-                ->where('invoice_id', $invoice->id->value)
-                ->delete();
-
-            foreach ($invoice->productLines() as $line) {
-                InvoiceProductLineModel::query()->create([
-                    'id' => Uuid::uuid4()->toString(),
-                    'invoice_id' => $invoice->id->value,
-                    'name' => $line->productName->value,
-                    'unit_price' => $line->unitPrice->value,
-                    'quantity' => $line->quantity->value,
-                ]);
-            }
+            $this->persist($invoice);
         });
+    }
+
+    public function updateLocked(InvoiceId $id, Closure $mutator): void
+    {
+        DB::transaction(function () use ($id, $mutator): void {
+            $model = InvoiceModel::query()
+                ->with('productLines')
+                ->lockForUpdate()
+                ->find($id->value);
+
+            if ($model === null) {
+                throw InvoiceNotFound::withId($id->value);
+            }
+
+            $invoice = $this->toDomain($model);
+
+            $mutator($invoice);
+
+            $this->persist($invoice);
+        });
+    }
+
+    /**
+     * Full-replace strategy for product lines: simple and safe for the
+     * draft-only write path of the current use-cases. Revisit if we ever
+     * mutate individual lines after send.
+     *
+     * Must be called inside an active DB transaction.
+     */
+    private function persist(Invoice $invoice): void
+    {
+        InvoiceModel::query()->updateOrCreate(
+            ['id' => $invoice->id->value],
+            [
+                'customer_name' => $invoice->customerName->value,
+                'customer_email' => $invoice->customerEmail->value,
+                'status' => $invoice->status(),
+            ],
+        );
+
+        InvoiceProductLineModel::query()
+            ->where('invoice_id', $invoice->id->value)
+            ->delete();
+
+        foreach ($invoice->productLines() as $line) {
+            InvoiceProductLineModel::query()->create([
+                'id' => Uuid::uuid4()->toString(),
+                'invoice_id' => $invoice->id->value,
+                'name' => $line->productName->value,
+                'unit_price' => $line->unitPrice->value,
+                'quantity' => $line->quantity->value,
+            ]);
+        }
     }
 
     private function toDomain(InvoiceModel $model): Invoice

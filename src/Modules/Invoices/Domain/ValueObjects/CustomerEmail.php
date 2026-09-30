@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace Modules\Invoices\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use Modules\Invoices\Domain\Exceptions\InvalidCustomer;
 use Stringable;
 
 final readonly class CustomerEmail implements Stringable
 {
-    public function __construct(public string $value)
+    public string $value;
+
+    public function __construct(string $value)
     {
-        if (filter_var($value, FILTER_VALIDATE_EMAIL) === false) {
-            throw new InvalidArgumentException("Invalid customer email: {$value}");
+        $trimmed = trim($value);
+        if (filter_var($trimmed, FILTER_VALIDATE_EMAIL) === false) {
+            throw InvalidCustomer::invalidEmail($value);
         }
+
+        $this->value = $trimmed;
     }
 
     public function __toString(): string

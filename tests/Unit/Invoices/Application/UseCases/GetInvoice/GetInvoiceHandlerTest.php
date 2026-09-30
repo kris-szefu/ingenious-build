@@ -10,24 +10,24 @@ use Modules\Invoices\Domain\Entities\ProductLine;
 use Modules\Invoices\Domain\Exceptions\InvoiceNotFound;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\CustomerName;
-use Modules\Invoices\Domain\ValueObjects\InvoiceId;
-use Tests\Support\Invoices\InvoiceIds;
 use Modules\Invoices\Domain\ValueObjects\ProductName;
 use Modules\Invoices\Domain\ValueObjects\Quantity;
 use Modules\Invoices\Domain\ValueObjects\UnitPrice;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\Invoices\InMemoryInvoiceRepository;
+use Tests\Support\Invoices\InvoiceIds;
 
 final class GetInvoiceHandlerTest extends TestCase
 {
     private InMemoryInvoiceRepository $repo;
+
     private GetInvoiceHandler $handler;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repo = new InMemoryInvoiceRepository();
+        $this->repo = new InMemoryInvoiceRepository;
         $this->handler = new GetInvoiceHandler($this->repo);
     }
 
@@ -85,4 +85,3 @@ final class GetInvoiceHandlerTest extends TestCase
         $this->handler->handle(InvoiceIds::random());
     }
 }
-

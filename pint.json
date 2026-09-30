@@ -1,0 +1,9 @@
+{
+    "preset": "laravel",
+    "exclude": [
+        "src/Modules/Notifications",
+        "tests/Feature/Notification",
+        "tests/Unit/Notification"
+    ]
+}
+

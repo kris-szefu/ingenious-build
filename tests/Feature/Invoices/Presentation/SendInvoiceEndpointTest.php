@@ -21,7 +21,7 @@ final class SendInvoiceEndpointTest extends TestCase
     {
         parent::setUp();
 
-        $this->fakeDriver = new FakeDriver();
+        $this->fakeDriver = new FakeDriver;
         $this->app->instance(DriverInterface::class, $this->fakeDriver);
     }
 
@@ -95,4 +95,3 @@ final class SendInvoiceEndpointTest extends TestCase
         ])->assertStatus(201)->json('id');
     }
 }
-

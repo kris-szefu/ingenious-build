@@ -19,18 +19,23 @@ final readonly class SendInvoiceHandler
 
     public function handle(SendInvoiceCommand $command): void
     {
-        $invoice = $this->invoices->getById($command->id);
+        // The whole flow runs inside `updateLocked` so that concurrent send
+        // requests for the same invoice are serialised on a pessimistic row
+        // lock. A losing request blocks until the winner commits, then sees
+        // `status = sending` and its `ensureCanBeSent()` guard throws — no
+        // second customer notification is dispatched.
+        $this->invoices->updateLocked($command->id, function (Invoice $invoice): void {
+            // Guard first: validate every send precondition without mutating
+            // state so that a failure never triggers a customer notification.
+            $invoice->ensureCanBeSent();
 
-        // Guard first: validate every send precondition without mutating state
-        // so that a failure never triggers a customer notification.
-        $invoice->ensureCanBeSent();
+            $this->notifications->notify($this->notifyDataFor($invoice));
 
-        $this->notifications->notify($this->notifyDataFor($invoice));
-
-        // Only transition + persist after the notification side effect has
-        // succeeded. If the facade throws, the invoice stays draft in storage.
-        $invoice->send();
-        $this->invoices->save($invoice);
+            // Only transition after the notification side effect has succeeded.
+            // If the facade throws, `updateLocked` rolls the transaction back
+            // and the invoice stays draft in storage.
+            $invoice->send();
+        });
     }
 
     private function notifyDataFor(Invoice $invoice): NotifyData

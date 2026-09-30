@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Invoices\Application\Ports;
 
-use Modules\Invoices\Domain\ValueObjects\InvoiceId;
-use Tests\Support\Invoices\InvoiceIds;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\Invoices\FixedIdGenerator;
+use Tests\Support\Invoices\InvoiceIds;
 
 final class FixedIdGeneratorTest extends TestCase
 {
@@ -31,4 +30,3 @@ final class FixedIdGeneratorTest extends TestCase
         self::assertSame($id, $generator->next());
     }
 }
-

@@ -43,22 +43,23 @@ Rules (enforced by `module-boundaries-guardrails`):
 - Across modules, Invoices depends **only** on `Modules\Notifications\Api\*` (facade interface, `NotifyData`, `WebhookDeliveredEvent`). Nothing in `Modules\Notifications\Application/Infrastructure/Presentation` is imported.
 - Invoices does not currently publish anything of its own, so `Api/` stays empty. Adding a public surface is a follow-up if another module ever needs to consume invoice events.
 
-### 2. Send is synchronous
+### 2. Send is synchronous, and serialised by a pessimistic row lock
 
-`SendInvoiceHandler::handle()` runs the entire send flow in the request thread:
+`SendInvoiceHandler::handle()` runs the entire send flow in the request thread, wrapped in a database transaction that pessimistically locks the invoice row:
 
-1. Load the invoice.
-2. `ensureCanBeSent()` — guard-only, no state mutation.
+1. `InvoiceRepositoryInterface::updateLocked($id, $mutator)` opens a transaction and does `SELECT ... FOR UPDATE` on the invoice.
+2. Inside the mutator closure: `ensureCanBeSent()` — guard-only, no state mutation.
 3. Call `NotificationFacadeInterface::notify(...)`.
-4. **Only if the facade returns normally**: `Invoice::send()` (draft → sending) + persist.
+4. **Only if the facade returns normally**: `Invoice::send()` (draft → sending). The adapter persists on closure return and commits.
 
 Rationale:
 
 - The task is a recruitment exercise for a synchronous CRUD-shaped API. Queueing adds a job driver, retry semantics, dead-letter handling, and idempotency questions that the README does not ask for.
 - Placing the guard **before** the facade call ensures a failure never triggers a customer notification (unit-tested in `SendInvoiceHandlerTest::it_rejects_when_invoice_has_no_product_lines`).
-- Placing the state transition + persist **after** the facade call ensures a facade error leaves the invoice in `draft`, so a retry is safe (unit-tested in `it_leaves_invoice_in_draft_when_facade_throws`).
+- Placing the state transition **after** the facade call ensures a facade error leaves the invoice in `draft`, so a retry is safe (unit-tested in `it_leaves_invoice_in_draft_when_facade_throws`).
+- Wrapping the whole flow in `updateLocked` closes the concurrent-double-send race: two simultaneous requests for the same invoice serialise on the row lock. The winner commits `sending`; the loser's `ensureCanBeSent()` guard then throws `InvoiceCannotBeSent::notInDraft(...)` **before** any second `notify(...)` call. Sequential coverage: `SendInvoiceEndpointTest::returns_422_when_invoice_is_not_in_draft` asserts `FakeDriver::$sent` has exactly one entry after two send calls.
 
-Trade-off: if the notification path becomes slow, the request thread pays for it. Acceptable at this scale; if it ever isn't, the seam is a single method behind an interface — queueing is a listener swap, not a redesign.
+Trade-off: if the notification path becomes slow, the lock is held for the duration and the request thread pays for it. Acceptable at this scale; if it ever isn't, the seam is a single method behind an interface — queueing (via an outbox) is a listener swap, not a redesign.
 
 ### 3. Invoice id is the notification reference id
 

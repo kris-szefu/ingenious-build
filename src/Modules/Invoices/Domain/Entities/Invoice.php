@@ -94,6 +94,10 @@ final class Invoice
      * (e.g. notify the customer) before the transition should invoke this
      * first, then call {@see self::send()} once the side effect has succeeded.
      *
+     * Positive `quantity` and `unitPrice` are enforced by the {@see Quantity}
+     * and {@see UnitPrice} value objects at construction time, so an invoice
+     * built through the public API cannot carry an invalid line here.
+     *
      * @throws InvoiceCannotBeSent
      */
     public function ensureCanBeSent(): void
@@ -104,12 +108,6 @@ final class Invoice
 
         if ($this->productLines === []) {
             throw InvoiceCannotBeSent::hasNoProductLines();
-        }
-
-        foreach ($this->productLines as $line) {
-            if ($line->quantity->value <= 0 || $line->unitPrice->value <= 0) {
-                throw InvoiceCannotBeSent::hasInvalidProductLine();
-            }
         }
     }
 

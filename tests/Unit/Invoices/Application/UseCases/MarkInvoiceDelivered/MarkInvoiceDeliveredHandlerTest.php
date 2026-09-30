@@ -123,5 +123,3 @@ final class MarkInvoiceDeliveredHandlerTest extends TestCase
         );
     }
 }
-
-

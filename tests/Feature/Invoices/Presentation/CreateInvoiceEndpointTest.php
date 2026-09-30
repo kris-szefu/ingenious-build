@@ -30,7 +30,8 @@ final class CreateInvoiceEndpointTest extends TestCase
             ->assertJsonPath('customer_email', 'ada@example.com')
             ->assertJsonPath('total_price', 1100)
             ->assertJsonPath('product_lines.0.product_name', 'Widget')
-            ->assertJsonPath('product_lines.1.product_name', 'Gadget');
+            ->assertJsonPath('product_lines.1.product_name', 'Gadget')
+            ->assertHeader('Location', "/api/invoices/{$response->json('id')}");
 
         $this->assertDatabaseHas('invoices', [
             'customer_name' => 'Ada Lovelace',

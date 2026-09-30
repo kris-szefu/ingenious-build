@@ -25,4 +25,3 @@ final readonly class SendInvoiceController
         return new Response('', HttpResponse::HTTP_ACCEPTED);
     }
 }
-

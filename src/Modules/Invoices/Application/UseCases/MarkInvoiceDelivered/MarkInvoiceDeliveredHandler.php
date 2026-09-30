@@ -57,4 +57,3 @@ final readonly class MarkInvoiceDeliveredHandler
         $this->invoices->save($invoice);
     }
 }
-

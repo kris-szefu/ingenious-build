@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\Invoices\Domain\Exceptions\InvalidCustomer;
 use Modules\Invoices\Domain\Exceptions\InvalidInvoiceId;
 use Modules\Invoices\Domain\Exceptions\InvalidProductLine;
 use Modules\Invoices\Domain\Exceptions\InvoiceCannotBeSent;
@@ -34,4 +35,5 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(fn (InvalidInvoiceId $e, Request $request) => $renderNotFound($e->getMessage(), $request));
         $exceptions->render(fn (InvoiceCannotBeSent $e, Request $request) => $renderUnprocessable($e->getMessage(), $request));
         $exceptions->render(fn (InvalidProductLine $e, Request $request) => $renderUnprocessable($e->getMessage(), $request));
+        $exceptions->render(fn (InvalidCustomer $e, Request $request) => $renderUnprocessable($e->getMessage(), $request));
     })->create();

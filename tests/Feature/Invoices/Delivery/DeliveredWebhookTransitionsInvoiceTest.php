@@ -100,7 +100,3 @@ final class DeliveredWebhookTransitionsInvoiceTest extends TestCase
         ])->assertStatus(201)->json('id');
     }
 }
-
-
-
-

@@ -91,8 +91,9 @@ HTTP POST /api/invoices
       → IdGeneratorInterface   (UuidGenerator)
       → Invoice::draft(...)    (Domain — enforces value-object invariants)
       → InvoiceRepositoryInterface::save   (EloquentInvoiceRepository)
-    ← id
-  ← 201 { id }
+    ← InvoiceView::fromDomain(Invoice)   (no repository re-fetch)
+  ← 201 { id, status, customer_*, product_lines[], total_price }
+    Location: /api/invoices/{id}
 ```
 
 ### View
@@ -112,17 +113,19 @@ HTTP GET /api/invoices/{id}
 HTTP POST /api/invoices/{id}/send
   → SendInvoiceController
     → SendInvoiceHandler
-      → InvoiceRepositoryInterface::getById
-      → Invoice::ensureCanBeSent()          (guards — no mutation)
-      → NotificationFacadeInterface::notify(NotifyData{ resourceId = invoice.id, ... })
-          → NotificationFacade (Notifications module)
-            → DriverInterface::send         (DummyDriver / FakeDriver in tests)
-      → Invoice::send()                     (draft → sending)
-      → InvoiceRepositoryInterface::save
+      → InvoiceRepositoryInterface::updateLocked($id, $mutator)
+          [ DB::transaction + SELECT ... FOR UPDATE ]
+          → $mutator(Invoice):
+              → Invoice::ensureCanBeSent()          (guards — no mutation)
+              → NotificationFacadeInterface::notify(NotifyData{ resourceId = invoice.id, ... })
+                  → NotificationFacade (Notifications module)
+                    → DriverInterface::send         (DummyDriver / FakeDriver in tests)
+              → Invoice::send()                     (draft → sending)
+          [ persist + commit ]
   ← 202 (empty body)
 ```
 
-Guard order matters: the domain check runs **before** the notification call so a failure never triggers a customer email. The state transition runs **after** the notification returns so a facade failure leaves the invoice in `draft` and the request retryable.
+Guard order matters: the domain check runs **before** the notification call so a failure never triggers a customer email. The state transition runs **after** the notification returns so a facade failure leaves the invoice in `draft` and the request retryable. The pessimistic row lock serialises concurrent send requests for the same invoice — the losing request blocks until the winner commits, then its `ensureCanBeSent()` guard fires (invoice is now `sending`) before any second notification is dispatched.
 
 ### Deliver (webhook → listener → state transition)
 

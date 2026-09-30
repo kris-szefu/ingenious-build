@@ -8,7 +8,6 @@ use Illuminate\Http\JsonResponse;
 use Modules\Invoices\Application\UseCases\CreateInvoice\CreateInvoiceCommand;
 use Modules\Invoices\Application\UseCases\CreateInvoice\CreateInvoiceHandler;
 use Modules\Invoices\Application\UseCases\CreateInvoice\ProductLineInput;
-use Modules\Invoices\Application\UseCases\GetInvoice\GetInvoiceHandler;
 use Modules\Invoices\Presentation\Http\Requests\CreateInvoiceRequest;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,7 +15,6 @@ final readonly class CreateInvoiceController
 {
     public function __construct(
         private CreateInvoiceHandler $createInvoiceHandler,
-        private GetInvoiceHandler $getInvoiceHandler,
     ) {}
 
     public function __invoke(CreateInvoiceRequest $request): JsonResponse
@@ -30,14 +28,16 @@ final readonly class CreateInvoiceController
             $request->input('product_lines', []),
         );
 
-        $invoiceId = $this->createInvoiceHandler->handle(new CreateInvoiceCommand(
+        $invoice = $this->createInvoiceHandler->handle(new CreateInvoiceCommand(
             customerName: $request->input('customer_name'),
             customerEmail: $request->input('customer_email'),
             productLines: $productLines,
         ));
 
-        $invoice = $this->getInvoiceHandler->handle($invoiceId);
-
-        return new JsonResponse($invoice->toArray(), Response::HTTP_CREATED);
+        return new JsonResponse(
+            data: $invoice->toArray(),
+            status: Response::HTTP_CREATED,
+            headers: ['Location' => "/api/invoices/{$invoice->id}"],
+        );
     }
 }

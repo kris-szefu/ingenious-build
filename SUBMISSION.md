@@ -1,8 +1,8 @@
 # Submission notes
 
-This file exists so a reviewer can get from a fresh clone to a running suite in under two minutes, and see at a glance what was built and where to look for the reasoning.
+Entry point for reviewers: how to run the suite, what was built, and where decisions live.
 
-The root [`README.md`](./README.md) is the recruiter's original task description and is **intentionally left untouched**. Task-by-task status lives in [`docs/BACKLOG.md`](./docs/BACKLOG.md).
+The root [`README.md`](./README.md) is the recruiter's original task description and is **intentionally left untouched**. Task status lives in [`docs/BACKLOG.md`](./docs/BACKLOG.md).
 
 ## How to run
 
@@ -18,12 +18,12 @@ docker compose exec app bash
 
 ### Endpoints
 
-| Method | URL                                        | Purpose                                                            |
-|--------|--------------------------------------------|--------------------------------------------------------------------|
-| POST   | `/api/invoices`                            | Create a draft invoice                                             |
-| GET    | `/api/invoices/{id}`                       | View an invoice with computed totals                               |
-| POST   | `/api/invoices/{id}/send`                  | Guards + notify + transition to `sending`                          |
-| GET    | `/api/notification/hook/delivered/{ref}`   | Fixture webhook — flips `sending` → `sent-to-client`               |
+| Method | URL                                      | Purpose                                              |
+|--------|------------------------------------------|------------------------------------------------------|
+| POST   | `/api/invoices`                          | Create a draft invoice                               |
+| GET    | `/api/invoices/{id}`                     | View an invoice with computed totals                 |
+| POST   | `/api/invoices/{id}/send`                | Guards + notify + transition to `sending`            |
+| GET    | `/api/notification/hook/delivered/{ref}` | Fixture webhook — flips `sending` → `sent-to-client` |
 
 ## How to test
 
@@ -38,7 +38,7 @@ docker compose exec app ./vendor/bin/phpunit --filter SendInvoiceEndpointTest
 docker compose exec app ./vendor/bin/phpunit tests/Unit/Invoices/Domain
 ```
 
-Current baseline: **65 tests, 148 assertions, all green.** Two PHP 8.5 deprecations surface from stock Laravel's `config/database.php` (`PDO::MYSQL_ATTR_SSL_CA`) and are unrelated to the submission.
+Two PHP 8.5 deprecations may surface from stock Laravel's `config/database.php` (`PDO::MYSQL_ATTR_SSL_CA`); they are unrelated to this submission.
 
 ### Test layout
 
@@ -54,9 +54,9 @@ tests/
 
 ## Reviewer notes
 
-- **Event-name mismatch.** The README (recruiter's task description) refers to the delivery event as `ResourceDeliveredEvent`, but the Notifications fixture module actually ships `Modules\Notifications\Api\Events\WebhookDeliveredEvent`. The mismatch is pre-existing drift between the task description and the starter code — not something introduced here. The README explicitly says the Notifications module *"should not be treated as a reference for DDD structure"* and is out of scope for edits, so renaming the fixture class was not an option. The code uses the real class name; flagged in [ADR 0002 §6](./docs/adr/0002-invoices-module-structure.md#6-use-the-real-class-name-webhookdeliveredevent).
-- **Notifications module is a fixture.** Its shape is intentionally not DDD-ish (per the README) and was not modified. The Invoices module only reaches into `Modules\Notifications\Api\*`.
-- **Backlog-driven, one-task-one-commit** — every commit maps 1:1 to a `docs/backlog/NNN-*.md` file. `docs/BACKLOG.md` is the status dashboard.
+- **Event name:** README says `ResourceDeliveredEvent`; the Notifications fixture ships `WebhookDeliveredEvent`. Code uses the real class; see [ADR 0002 §6](./docs/adr/0002-invoices-module-structure.md#6-use-the-real-class-name-webhookdeliveredevent).
+- **Notifications** is a fixture — untouched; Invoices only imports `Modules\Notifications\Api\*`.
+- **Backlog:** one task ≈ one commit; status in [`docs/BACKLOG.md`](./docs/BACKLOG.md). Core path (create / view / send / deliver) plus polish [014](./docs/backlog/014-final-quality-pass.md) is done; [019](./docs/backlog/019-ddd-purity-refactor.md) (strict DDD) and OpenAPI tasks [017](./docs/backlog/017-openapi-spec.md) / [018](./docs/backlog/018-openapi-ci-check.md) are follow-ups, not required for this MR.
 
 ## Where to look
 
@@ -64,11 +64,8 @@ tests/
 |---|---|
 | Task-by-task history + status | [`docs/BACKLOG.md`](./docs/BACKLOG.md) + [`docs/backlog/`](./docs/backlog/) |
 | Big architectural decisions | [`docs/adr/`](./docs/adr/) |
-| Module map + cross-module flow diagrams | [`docs/architecture/README.md`](./docs/architecture/README.md) |
-| Agent working rules (skills that governed this build) | [`docs/agent-skills/`](./docs/agent-skills/) |
+| Module map + cross-module flows | [`docs/architecture/README.md`](./docs/architecture/README.md) |
 | HTTP status mapping | [`bootstrap/app.php`](./bootstrap/app.php) |
 | Invoice state machine | [`src/Modules/Invoices/Domain/Entities/Invoice.php`](./src/Modules/Invoices/Domain/Entities/Invoice.php) |
 | Send flow guard order | [`src/Modules/Invoices/Application/UseCases/SendInvoice/SendInvoiceHandler.php`](./src/Modules/Invoices/Application/UseCases/SendInvoice/SendInvoiceHandler.php) |
 | Delivery listener | [`src/Modules/Invoices/Infrastructure/Listeners/MarkInvoiceSentToClientListener.php`](./src/Modules/Invoices/Infrastructure/Listeners/MarkInvoiceSentToClientListener.php) |
-
-

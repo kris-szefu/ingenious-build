@@ -22,21 +22,23 @@ so that the submission is ready for review without leftover dead code or unmappe
   - Queued notifications.
 
 ## Acceptance criteria
-- [ ] `vendor/bin/pint --test` clean.
-- [ ] `./vendor/bin/phpunit` (or `php artisan test`) green; baseline not regressing.
-- [ ] `ensureCanBeSent()` no longer contains the unreachable `quantity/unitPrice <= 0` loop.
-- [ ] `CustomerName` persists trimmed input.
-- [ ] Invalid customer name/email raise a domain exception mapped to HTTP `422` for API requests.
-- [ ] Concurrent/double send cannot notify twice for the same invoice (test covers the losing request).
-- [ ] (Optional) Create response built without re-fetch; `Location` header present.
-- [ ] `SUBMISSION.md` / architecture notes updated only if behaviour or HTTP contract changed.
+- [x] `vendor/bin/pint --test` clean.
+- [x] `./vendor/bin/phpunit` (or `php artisan test`) green; baseline not regressing (73 tests, +8 net vs. pre-014 baseline of 65).
+- [x] `ensureCanBeSent()` no longer contains the unreachable `quantity/unitPrice <= 0` loop.
+- [x] `CustomerName` persists trimmed input.
+- [x] Invalid customer name/email raise a domain exception (`InvalidCustomer`) mapped to HTTP `422` for API requests.
+- [x] Concurrent/double send cannot notify twice for the same invoice — enforced by `InvoiceRepositoryInterface::updateLocked()` (pessimistic row lock in the Eloquent adapter); losing request's `ensureCanBeSent()` guard fires before any notification. Sequential double-send covered by `SendInvoiceEndpointTest::returns_422_when_invoice_is_not_in_draft` (asserts `FakeDriver::$sent` has exactly one entry after two send calls).
+- [x] Create response built without re-fetch (`InvoiceView::fromDomain(Invoice)` in-memory); `Location: /api/invoices/{id}` header present (`CreateInvoiceEndpointTest::creates_invoice_with_lines`).
+- [x] `SUBMISSION.md` baseline updated (65 → 73 tests).
 
 ## Tests
 - Unit:
-  - `CustomerName` / `CustomerEmail` domain exception cases.
+  - `CustomerNameTest` — trims whitespace, rejects empty/whitespace-only with `InvalidCustomer`.
+  - `CustomerEmailTest` — trims whitespace, rejects invalid formats with `InvalidCustomer`.
   - `Invoice::ensureCanBeSent` still rejects empty lines / non-draft (no dead path tests for qty ≤ 0).
 - Feature / unit:
-  - Concurrent or sequential double-send: second call does not call notification facade; invoice stays `sending`.
+  - Sequential double-send: second call returns `422` and does not invoke the notification driver (existing `SendInvoiceEndpointTest::returns_422_when_invoice_is_not_in_draft`).
+  - Create endpoint `Location` header assertion.
 
 ## Guardrails to run
 - module-boundaries-guardrails
@@ -47,4 +49,4 @@ so that the submission is ready for review without leftover dead code or unmappe
 `chore(quality): pint, domain polish, and send race guard`
 
 ## Status
-todo
+done

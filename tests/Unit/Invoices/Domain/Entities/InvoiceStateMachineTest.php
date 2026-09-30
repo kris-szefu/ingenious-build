@@ -11,13 +11,12 @@ use Modules\Invoices\Domain\Exceptions\InvoiceCannotBeMarkedSent;
 use Modules\Invoices\Domain\Exceptions\InvoiceCannotBeSent;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\CustomerName;
-use Modules\Invoices\Domain\ValueObjects\InvoiceId;
-use Tests\Support\Invoices\InvoiceIds;
 use Modules\Invoices\Domain\ValueObjects\ProductName;
 use Modules\Invoices\Domain\ValueObjects\Quantity;
 use Modules\Invoices\Domain\ValueObjects\UnitPrice;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Tests\Support\Invoices\InvoiceIds;
 
 final class InvoiceStateMachineTest extends TestCase
 {
@@ -74,23 +73,6 @@ final class InvoiceStateMachineTest extends TestCase
     }
 
     #[Test]
-    public function it_rejects_send_when_a_line_is_invalid(): void
-    {
-        // VOs already guard against non-positive values; simulate a bypassed line
-        // to exercise the domain's redundant defensive check.
-        $reflection = new \ReflectionClass(Quantity::class);
-        $quantity = $reflection->newInstanceWithoutConstructor();
-        $quantityProp = $reflection->getProperty('value');
-        $quantityProp->setValue($quantity, 0);
-
-        $line = new ProductLine(new ProductName('Widget'), $quantity, new UnitPrice(100));
-        $invoice = $this->draftWithLines($line);
-
-        $this->expectException(InvoiceCannotBeSent::class);
-        $invoice->send();
-    }
-
-    #[Test]
     public function it_marks_sent_to_client_only_from_sending(): void
     {
         $invoice = $this->draftWithLines($this->line());
@@ -121,4 +103,3 @@ final class InvoiceStateMachineTest extends TestCase
         $invoice->markSentToClient();
     }
 }
-

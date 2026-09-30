@@ -11,13 +11,12 @@ use Modules\Invoices\Domain\Enums\StatusEnum;
 use Modules\Invoices\Domain\Exceptions\InvoiceNotFound;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\CustomerName;
-use Modules\Invoices\Domain\ValueObjects\InvoiceId;
-use Tests\Support\Invoices\InvoiceIds;
 use Modules\Invoices\Domain\ValueObjects\ProductName;
 use Modules\Invoices\Domain\ValueObjects\Quantity;
 use Modules\Invoices\Domain\ValueObjects\UnitPrice;
 use Modules\Invoices\Infrastructure\Repositories\EloquentInvoiceRepository;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\Support\Invoices\InvoiceIds;
 use Tests\TestCase;
 
 final class EloquentInvoiceRepositoryTest extends TestCase
@@ -29,7 +28,7 @@ final class EloquentInvoiceRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repo = new EloquentInvoiceRepository();
+        $this->repo = new EloquentInvoiceRepository;
     }
 
     #[Test]

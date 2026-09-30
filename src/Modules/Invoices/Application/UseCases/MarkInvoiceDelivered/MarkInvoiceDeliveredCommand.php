@@ -12,4 +12,3 @@ final readonly class MarkInvoiceDeliveredCommand
         public InvoiceId $id,
     ) {}
 }
-

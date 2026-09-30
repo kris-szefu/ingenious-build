@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace Modules\Invoices\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use Modules\Invoices\Domain\Exceptions\InvalidCustomer;
 use Stringable;
 
 final readonly class CustomerName implements Stringable
 {
-    public function __construct(public string $value)
+    public string $value;
+
+    public function __construct(string $value)
     {
         $trimmed = trim($value);
         if ($trimmed === '') {
-            throw new InvalidArgumentException('Customer name must not be empty.');
+            throw InvalidCustomer::emptyName();
         }
+
+        $this->value = $trimmed;
     }
 
     public function __toString(): string

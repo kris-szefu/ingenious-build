@@ -18,9 +18,4 @@ final class InvoiceCannotBeSent extends DomainException
     {
         return new self('Invoice must contain at least one product line to be sent.');
     }
-
-    public static function hasInvalidProductLine(): self
-    {
-        return new self('All product lines must have positive quantity and unit price.');
-    }
 }

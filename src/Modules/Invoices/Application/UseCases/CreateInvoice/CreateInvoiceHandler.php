@@ -6,11 +6,11 @@ namespace Modules\Invoices\Application\UseCases\CreateInvoice;
 
 use Modules\Invoices\Application\Ports\IdGeneratorInterface;
 use Modules\Invoices\Application\Ports\InvoiceRepositoryInterface;
+use Modules\Invoices\Application\UseCases\GetInvoice\InvoiceView;
 use Modules\Invoices\Domain\Entities\Invoice;
 use Modules\Invoices\Domain\Entities\ProductLine;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\CustomerName;
-use Modules\Invoices\Domain\ValueObjects\InvoiceId;
 use Modules\Invoices\Domain\ValueObjects\ProductName;
 use Modules\Invoices\Domain\ValueObjects\Quantity;
 use Modules\Invoices\Domain\ValueObjects\UnitPrice;
@@ -22,7 +22,7 @@ final readonly class CreateInvoiceHandler
         private IdGeneratorInterface $ids,
     ) {}
 
-    public function handle(CreateInvoiceCommand $command): InvoiceId
+    public function handle(CreateInvoiceCommand $command): InvoiceView
     {
         $id = $this->ids->next();
 
@@ -44,6 +44,8 @@ final readonly class CreateInvoiceHandler
 
         $this->invoices->save($invoice);
 
-        return $id;
+        // Return the view directly from the in-memory aggregate — no second
+        // repository round-trip needed.
+        return InvoiceView::fromDomain($invoice);
     }
 }

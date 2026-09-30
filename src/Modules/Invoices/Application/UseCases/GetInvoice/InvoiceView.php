@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Invoices\Application\UseCases\GetInvoice;
 
+use Modules\Invoices\Domain\Entities\Invoice;
+use Modules\Invoices\Domain\Entities\ProductLine;
+
 final readonly class InvoiceView
 {
     /**
@@ -17,6 +20,28 @@ final readonly class InvoiceView
         public array $productLines,
         public int $totalPrice,
     ) {}
+
+    public static function fromDomain(Invoice $invoice): self
+    {
+        $productLines = array_map(
+            static fn (ProductLine $line): ProductLineView => new ProductLineView(
+                productName: $line->productName->value,
+                quantity: $line->quantity->value,
+                unitPrice: $line->unitPrice->value,
+                totalUnitPrice: $line->totalUnitPrice(),
+            ),
+            $invoice->productLines(),
+        );
+
+        return new self(
+            id: $invoice->id->value,
+            status: $invoice->status()->value,
+            customerName: $invoice->customerName->value,
+            customerEmail: $invoice->customerEmail->value,
+            productLines: $productLines,
+            totalPrice: $invoice->totalPrice(),
+        );
+    }
 
     /**
      * @return array{
