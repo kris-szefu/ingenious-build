@@ -14,10 +14,10 @@ As an API client, I want to trigger sending over HTTP, so that the send workflow
   - Delivery handling (story 012).
 
 ## Acceptance criteria
-- [ ] Happy path returns `202` and persists `sending`.
-- [ ] Non-draft → `422` and no state change.
-- [ ] Missing invoice → `404`.
-- [ ] Uses fake notification driver in tests.
+- [x] Happy path returns `202` and persists `sending`.
+- [x] Non-draft → `422` and no state change.
+- [x] Missing invoice → `404`.
+- [x] Uses fake notification driver in tests.
 
 ## Tests
 - Feature:
@@ -33,5 +33,5 @@ As an API client, I want to trigger sending over HTTP, so that the send workflow
 `feat(invoices): send endpoint`
 
 ## Status
-todo
+done
 
