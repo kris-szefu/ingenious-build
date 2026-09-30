@@ -171,7 +171,8 @@ The Invoices module's `resourceId` **is** the invoice UUID — see ADR 0002 §3 
 The README refers to the delivery event as `ResourceDeliveredEvent`. The class actually shipped by the Notifications module is `Modules\Notifications\Api\Events\WebhookDeliveredEvent`. The code uses the real class name. See ADR 0002 §6.
 
 ## API contract
-- [ADR 0001 — OpenAPI strategy](../adr/0001-openapi-strategy.md): contract-first. `docs/api/openapi.yaml` is the source of truth; `jane-php/open-api` generates typed PHP DTOs into `src/Modules/Invoices/Presentation/Http/Generated/`; hand-written assemblers under `Presentation/Http/Assemblers/` translate between generated DTOs and Application DTOs (`CreateInvoiceCommand`, `InvoiceView`). `Application/` and `Domain/` never depend on generated code. Implementation tracked in backlog tasks [017](../backlog/017-openapi-spec.md) and [018](../backlog/018-openapi-ci-check.md).
+- [`docs/api/openapi.yaml`](../api/openapi.yaml) — hand-authored OpenAPI 3.1 spec covering the three Invoices endpoints (request/response schemas, `InvoiceStatus` enum, and error shapes). This is the source of truth for the HTTP surface today; controllers are hand-written against Laravel `FormRequest` and Application DTOs.
+- [ADR 0001 — OpenAPI strategy](../adr/0001-openapi-strategy.md): contract-first target. Generated PHP DTOs (`jane-php/open-api` → `src/Modules/Invoices/Presentation/Http/Generated/`), hand-written assemblers, and CI lint / regeneration-diff guards remain **documented follow-ups** in backlog tasks [017](../backlog/017-openapi-spec.md) and [018](../backlog/018-openapi-ci-check.md). `Application/` and `Domain/` will never depend on generated code.
 
 ## ADR index
 - [0001 — OpenAPI strategy](../adr/0001-openapi-strategy.md)

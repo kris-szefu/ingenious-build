@@ -57,7 +57,7 @@ tests/
 - **Event name:** README says `ResourceDeliveredEvent`; the Notifications fixture ships `WebhookDeliveredEvent`. Code uses the real class; see [ADR 0002 §6](./docs/adr/0002-invoices-module-structure.md#6-use-the-real-class-name-webhookdeliveredevent).
 - **Notifications** is a fixture — untouched; Invoices only imports `Modules\Notifications\Api\*`, and only inside `Infrastructure/` (via the ACL adapter `NotificationsCustomerNotifier` and the delivery listener). `Application/` and `Domain/` are cross-module-import-free — see [ADR 0003](./docs/adr/0003-ddd-purity-refactor.md).
 - **Design highlights:** the send flow records domain events on the aggregate (`InvoiceMarkedSending`, `InvoiceSentToClient`) that are dispatched after the transaction commits via a module-owned `DomainEventDispatcherInterface`; customer notifications go through Invoices' own `CustomerNotifierInterface` port. `Domain/` and `Application/` have zero Laravel, Eloquent, or Notifications imports. `Ramsey\Uuid\Uuid::isValid()` is retained deliberately inside `InvoiceId` — see [ADR 0003 §6](./docs/adr/0003-ddd-purity-refactor.md).
-- **Backlog:** one task ≈ one commit; status in [`docs/BACKLOG.md`](./docs/BACKLOG.md). The core path (create / view / send / deliver), the polish [014](./docs/backlog/014-final-quality-pass.md), and the strict DDD refactor [019](./docs/backlog/019-ddd-purity-refactor.md) are done; OpenAPI tasks [017](./docs/backlog/017-openapi-spec.md) / [018](./docs/backlog/018-openapi-ci-check.md) and the state-machine-library spike [015](./docs/backlog/015-spike-state-machine-library.md) remain as documented follow-ups.
+- **Backlog:** one task ≈ one commit; status in [`docs/BACKLOG.md`](./docs/BACKLOG.md). The core path (create / view / send / deliver), the polish [014](./docs/backlog/014-final-quality-pass.md), the strict DDD refactor [019](./docs/backlog/019-ddd-purity-refactor.md), and the hand-authored OpenAPI spec ([`docs/api/openapi.yaml`](./docs/api/openapi.yaml)) are done. Generated DTOs + assemblers [017](./docs/backlog/017-openapi-spec.md), OpenAPI CI [018](./docs/backlog/018-openapi-ci-check.md), and the state-machine-library spike [015](./docs/backlog/015-spike-state-machine-library.md) remain as documented follow-ups — deferred as scope hygiene for an interview-sized submission, with the trigger conditions written into each backlog file.
 
 ## Where to look
 
@@ -65,6 +65,7 @@ tests/
 |---|---|
 | Task-by-task history + status | [`docs/BACKLOG.md`](./docs/BACKLOG.md) + [`docs/backlog/`](./docs/backlog/) |
 | Big architectural decisions | [`docs/adr/`](./docs/adr/) |
+| HTTP contract (OpenAPI 3.1) | [`docs/api/openapi.yaml`](./docs/api/openapi.yaml) |
 | Notify-vs-transition ordering + ACL notifier rationale | [ADR 0003](./docs/adr/0003-ddd-purity-refactor.md) |
 | Module map + cross-module flows | [`docs/architecture/README.md`](./docs/architecture/README.md) |
 | HTTP status mapping | [`bootstrap/app.php`](./bootstrap/app.php) |

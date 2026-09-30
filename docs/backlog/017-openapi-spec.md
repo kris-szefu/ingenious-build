@@ -82,4 +82,11 @@ HTTP contract drives the wire layer without leaking generated types into
 `feat(invoices): openapi contract, generated dtos, and assemblers`
 
 ## Status
-todo
+partial — hand-authored `docs/api/openapi.yaml` shipped (source of truth for
+the HTTP surface, all three operations with request/response schemas, the
+`InvoiceStatus` enum, and 404/422 error shapes). The Jane generation +
+assemblers + module-boundaries `Generated\` rule are consciously deferred:
+for three endpoints the generator setup (composer dep, `jane.php`,
+`.gitattributes`, Pint excludes, two assemblers, controller rewiring) buys
+little over the hand-written FormRequest + `toArray()` path already in place.
+Revisit when a fourth endpoint lands or a client SDK is needed.

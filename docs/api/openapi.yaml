@@ -1,0 +1,275 @@
+openapi: 3.1.0
+info:
+  title: Invoices API
+  version: "1.0.0"
+  description: |
+    HTTP contract for the Invoices module. Three endpoints cover the full
+    lifecycle: create a draft, view it with computed totals, and send it via
+    the Notifications facade. A fourth (webhook) endpoint lives in the
+    Notifications module and is not part of this contract.
+
+    This file is authored by hand and is the **source of truth for the HTTP
+    surface** (ADR 0001). Generated PHP DTOs, hand-written assemblers, and CI
+    lint/regeneration guards are documented follow-ups (backlog 017 / 018);
+    the current controllers still map Laravel `FormRequest` input to
+    Application DTOs directly.
+servers:
+  - url: http://localhost
+    description: Local Sail
+tags:
+  - name: Invoices
+
+paths:
+  /api/invoices:
+    post:
+      tags: [Invoices]
+      operationId: createInvoice
+      summary: Create a draft invoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvoiceRequest'
+            example:
+              customer_name: Ada Lovelace
+              customer_email: ada@example.test
+              product_lines:
+                - product_name: Analytical Engine
+                  quantity: 1
+                  unit_price: 42000
+      responses:
+        '201':
+          description: Draft invoice created.
+          headers:
+            Location:
+              description: Canonical URL of the created invoice.
+              schema: { type: string, format: uri-reference }
+              example: /api/invoices/9f1d2c4e-6a3b-4b7e-9f10-2c8f1a4d5e6b
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+              example:
+                id: 9f1d2c4e-6a3b-4b7e-9f10-2c8f1a4d5e6b
+                status: draft
+                customer_name: Ada Lovelace
+                customer_email: ada@example.test
+                product_lines:
+                  - product_name: Analytical Engine
+                    quantity: 1
+                    unit_price: 42000
+                    total_unit_price: 42000
+                total_price: 42000
+        '422':
+          description: Validation error (Laravel `FormRequest`) or invalid customer / product line at the domain boundary.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              examples:
+                laravelValidation:
+                  summary: Laravel FormRequest validation failure
+                  value:
+                    message: The customer email field must be a valid email address.
+                    errors:
+                      customer_email:
+                        - The customer email field must be a valid email address.
+                domainInvariant:
+                  summary: Domain value-object rejection
+                  value:
+                    message: Product line quantity must be greater than zero.
+
+  /api/invoices/{id}:
+    get:
+      tags: [Invoices]
+      operationId: viewInvoice
+      summary: View an invoice with computed totals
+      parameters:
+        - $ref: '#/components/parameters/InvoiceId'
+      responses:
+        '200':
+          description: Invoice found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+              example:
+                id: 9f1d2c4e-6a3b-4b7e-9f10-2c8f1a4d5e6b
+                status: sending
+                customer_name: Ada Lovelace
+                customer_email: ada@example.test
+                product_lines:
+                  - product_name: Analytical Engine
+                    quantity: 2
+                    unit_price: 42000
+                    total_unit_price: 84000
+                total_price: 84000
+        '404':
+          description: Invoice does not exist or `{id}` is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Invoice not found.
+
+  /api/invoices/{id}/send:
+    post:
+      tags: [Invoices]
+      operationId: sendInvoice
+      summary: Send a draft invoice via the Notifications facade
+      description: |
+        Guards then notifies then transitions `draft → sending` under a
+        pessimistic row lock (see architecture docs, "Send" flow).
+        The response body is intentionally empty; clients should re-fetch
+        the invoice via `viewInvoice` if the new status is needed.
+      parameters:
+        - $ref: '#/components/parameters/InvoiceId'
+      responses:
+        '202':
+          description: Notification dispatched and invoice moved to `sending`.
+        '404':
+          description: Invoice does not exist or `{id}` is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Invoice not found.
+        '422':
+          description: |
+            Illegal transition — invoice is not in `draft` or has no product
+            lines. Mapped from `InvoiceCannotBeSent` in `bootstrap/app.php`.
+            See ADR 0002 §4 for why this is `422` and not `409`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Invoice cannot be sent — current status is sending.
+
+components:
+  parameters:
+    InvoiceId:
+      name: id
+      in: path
+      required: true
+      description: Invoice UUID (v4).
+      schema:
+        type: string
+        format: uuid
+        example: 9f1d2c4e-6a3b-4b7e-9f10-2c8f1a4d5e6b
+
+  schemas:
+    CreateInvoiceRequest:
+      type: object
+      required: [customer_name, customer_email]
+      properties:
+        customer_name:
+          type: string
+          minLength: 1
+          example: Ada Lovelace
+        customer_email:
+          type: string
+          format: email
+          example: ada@example.test
+        product_lines:
+          description: |
+            Optional on the wire — the `FormRequest` treats a missing key as
+            an empty list. An invoice created with no lines is valid `draft`
+            state but cannot be sent (see `sendInvoice` 422).
+          type: array
+          default: []
+          items: { $ref: '#/components/schemas/ProductLineInput' }
+
+    ProductLineInput:
+      type: object
+      required: [product_name, quantity, unit_price]
+      properties:
+        product_name:
+          type: string
+          minLength: 1
+          example: Analytical Engine
+        quantity:
+          type: integer
+          minimum: 1
+          example: 2
+        unit_price:
+          description: Price per unit in the smallest currency unit (e.g. cents).
+          type: integer
+          minimum: 1
+          example: 42000
+
+    InvoiceResponse:
+      type: object
+      required:
+        - id
+        - status
+        - customer_name
+        - customer_email
+        - product_lines
+        - total_price
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/InvoiceStatus'
+        customer_name:
+          type: string
+        customer_email:
+          type: string
+          format: email
+        product_lines:
+          type: array
+          items: { $ref: '#/components/schemas/ProductLineView' }
+        total_price:
+          description: Sum of `product_lines[].total_unit_price`.
+          type: integer
+          minimum: 0
+
+    ProductLineView:
+      type: object
+      required: [product_name, quantity, unit_price, total_unit_price]
+      properties:
+        product_name: { type: string }
+        quantity: { type: integer, minimum: 1 }
+        unit_price: { type: integer, minimum: 1 }
+        total_unit_price:
+          description: '`quantity * unit_price`, computed server-side.'
+          type: integer
+          minimum: 1
+
+    InvoiceStatus:
+      type: string
+      enum:
+        - draft
+        - sending
+        - sent-to-client
+      description: |
+        - `draft` — initial state after `POST /api/invoices`.
+        - `sending` — set synchronously by `POST /api/invoices/{id}/send`
+          once the notification is dispatched.
+        - `sent-to-client` — set asynchronously by the delivery listener
+          reacting to `WebhookDeliveredEvent`.
+
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+
+    ValidationError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          properties:
+            errors:
+              type: object
+              description: Present on Laravel `FormRequest` failures; omitted for domain-invariant rejections.
+              additionalProperties:
+                type: array
+                items: { type: string }
+
+
