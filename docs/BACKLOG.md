@@ -21,13 +21,14 @@ Legend: `todo` · `done` · `blocked` · `skipped`
 | 011 | POST /invoices/{id}/send | [011](./backlog/011-http-send-endpoint.md) | `feat(invoices): send endpoint` | done | |
 | 012 | Webhook delivered listener | [012](./backlog/012-delivery-event-listener.md) | `feat(invoices): react to webhook delivered event` | done | |
 | 013 | ADR + architecture docs | [013](./backlog/013-adr-and-architecture-docs.md) | `docs(invoices): add ADR and update architecture docs` | done | Also introduces `/SUBMISSION.md` + `submission-updates` skill; root `README.md` untouched |
-| 014 | Final quality pass | [014](./backlog/014-final-quality-pass.md) | `chore(quality): pint and final test pass` | todo | |
-| 015 | Spike: external state-machine library | [015](./backlog/015-spike-state-machine-library.md) | `docs(invoices): spike external state-machine options (ADR)` | todo | Deferred follow-up to 003 |
+| 014 | Final quality pass | [014](./backlog/014-final-quality-pass.md) | `chore(quality): pint, domain polish, and send race guard` | todo | Hand-in polish: dead code, customer VOs, double-send guard; optional create Location |
+| 015 | Spike: external state-machine library | [015](./backlog/015-spike-state-machine-library.md) | `docs(invoices): spike external state-machine options (ADR)` | todo | Deferred follow-up to 003; nice-to-have |
 | 016 | Spike: OpenAPI strategy | [016](./backlog/016-spike-openapi-strategy.md) | `docs(invoices): spike openapi strategy (ADR)` | done | ADR 0001 — adopt contract-first (Option D) with `jane-php/open-api` |
-| 017 | OpenAPI spec, generated DTOs, assemblers | [017](./backlog/017-openapi-spec.md) | `feat(invoices): openapi contract, generated dtos, and assemblers` | todo | Follow-up from ADR 0001; depends on 008/009/011 |
-| 018 | OpenAPI CI: lint + regenerate-diff guard | [018](./backlog/018-openapi-ci-check.md) | `chore(invoices): lint openapi and enforce regeneration in ci` | todo | Follow-up from ADR 0001; depends on 017 |
+| 017 | OpenAPI spec, generated DTOs, assemblers | [017](./backlog/017-openapi-spec.md) | `feat(invoices): openapi contract, generated dtos, and assemblers` | todo | Follow-up from ADR 0001; depends on 008/009/011; nice-to-have |
+| 018 | OpenAPI CI: lint + regenerate-diff guard | [018](./backlog/018-openapi-ci-check.md) | `chore(invoices): lint openapi and enforce regeneration in ci` | todo | Follow-up from ADR 0001; depends on 017; nice-to-have |
+| 019 | DDD purity refactor (strict) | [019](./backlog/019-ddd-purity-refactor.md) | `refactor(invoices): strict DDD events, ACL notifier, and ProductLine VO` | todo | Nice-to-have; after 014; domain events + ACL + ProductLine VO |
 
 ## Progress
-- Total: 18
+- Total: 19
 - Done: 14
 - Blocked: 0
