@@ -2,7 +2,7 @@
 
 Single source of truth for task status. Update this file **in the same commit** that changes a task's status.
 
-Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
+Legend: `todo` · `done` · `blocked` · `skipped`
 
 ## Active sprint — Invoices module
 
@@ -28,29 +28,4 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 ## Progress
 - Total: 16
 - Done: 7
-- In progress: 0
 - Blocked: 0
-
-## Change log
-Append one line per status change (newest first):
-
-```
-2026-09-30  007  in-progress → done  feat(invoices): eloquent persistence adapter   (2524fe7)
-2026-09-30  007  todo → in-progress  eloquent persistence adapter (models + repo + uuid generator)
-2026-09-30  016  created            docs(invoices): spike openapi strategy (backlog entry)
-2026-09-29  006  in-progress → done  feat(invoices): view-invoice use-case
-2026-09-29  006  todo → in-progress  view-invoice use-case (read DTO + handler)
-2026-09-29  005  in-progress → done  feat(invoices): create-invoice use-case
-2026-09-29  005  todo → in-progress  create-invoice use-case (command + handler)
-2026-09-29  004  in-progress → done  feat(invoices): application ports
-2026-09-29  004  todo → in-progress  application ports (repo + id generator)
-2026-09-29  015  created            docs(invoices): spike external state-machine options (backlog entry)
-2026-09-29  003  in-progress → done   feat(invoices): invoice state machine
-2026-09-29  003  todo → in-progress   invoice state machine (transitions + guards)
-2026-09-29  002  in-progress → done   feat(invoices): model invoice domain
-2026-09-29  002  todo → in-progress   model invoice domain (VOs + entities)
-2026-09-29  001  in-progress → done   chore(invoices): scaffold module skeleton
-2026-09-29  001  todo → in-progress   scaffold Invoices module skeleton
-YYYY-MM-DD  NNN  todo → in-progress   short reason
-YYYY-MM-DD  NNN  in-progress → done   commit <sha>
-```
