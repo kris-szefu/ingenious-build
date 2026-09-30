@@ -18,9 +18,9 @@ As the module, I want a real database-backed repository, so that invoices persis
   - Controllers (stories 008/009/011).
 
 ## Acceptance criteria
-- [ ] Round-trip save + load reconstructs identical domain state.
-- [ ] Repository never returns null; throws `InvoiceNotFound`.
-- [ ] Eloquent models stay inside `Infrastructure/` and are not referenced by other layers.
+- [x] Round-trip save + load reconstructs identical domain state.
+- [x] Repository never returns null; throws `InvoiceNotFound`.
+- [x] Eloquent models stay inside `Infrastructure/` and are not referenced by other layers.
 
 ## Tests
 - Feature `tests/Feature/Invoices/Infrastructure/`:
@@ -35,5 +35,4 @@ As the module, I want a real database-backed repository, so that invoices persis
 `feat(invoices): eloquent persistence adapter`
 
 ## Status
-todo
-
+done

@@ -10,6 +10,7 @@ use Modules\Invoices\Domain\Enums\StatusEnum;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\CustomerName;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
+use Tests\Support\Invoices\InvoiceIds;
 use Modules\Invoices\Domain\ValueObjects\ProductName;
 use Modules\Invoices\Domain\ValueObjects\Quantity;
 use Modules\Invoices\Domain\ValueObjects\UnitPrice;
@@ -22,7 +23,7 @@ final class InvoiceTest extends TestCase
     public function total_price_sums_product_line_totals(): void
     {
         $invoice = Invoice::draft(
-            InvoiceId::generate(),
+            InvoiceIds::random(),
             new CustomerName('Ada Lovelace'),
             new CustomerEmail('ada@example.com'),
             [
@@ -38,7 +39,7 @@ final class InvoiceTest extends TestCase
     public function total_price_is_zero_when_there_are_no_product_lines(): void
     {
         $invoice = Invoice::draft(
-            InvoiceId::generate(),
+            InvoiceIds::random(),
             new CustomerName('Ada Lovelace'),
             new CustomerEmail('ada@example.com'),
         );

@@ -9,6 +9,7 @@ use Modules\Invoices\Domain\Exceptions\InvoiceNotFound;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\CustomerName;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
+use Tests\Support\Invoices\InvoiceIds;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\Invoices\InMemoryInvoiceRepository;
@@ -20,7 +21,7 @@ final class InMemoryInvoiceRepositoryTest extends TestCase
     {
         $repo = new InMemoryInvoiceRepository();
         $invoice = Invoice::draft(
-            InvoiceId::generate(),
+            InvoiceIds::random(),
             new CustomerName('Ada Lovelace'),
             new CustomerEmail('ada@example.com'),
         );
@@ -34,7 +35,7 @@ final class InMemoryInvoiceRepositoryTest extends TestCase
     public function it_overwrites_on_save_with_same_id(): void
     {
         $repo = new InMemoryInvoiceRepository();
-        $id = InvoiceId::generate();
+        $id = InvoiceIds::random();
 
         $first = Invoice::draft($id, new CustomerName('Ada'), new CustomerEmail('ada@example.com'));
         $second = Invoice::draft($id, new CustomerName('Grace'), new CustomerEmail('grace@example.com'));
@@ -51,7 +52,7 @@ final class InMemoryInvoiceRepositoryTest extends TestCase
         $repo = new InMemoryInvoiceRepository();
 
         $this->expectException(InvoiceNotFound::class);
-        $repo->getById(InvoiceId::generate());
+        $repo->getById(InvoiceIds::random());
     }
 }
 

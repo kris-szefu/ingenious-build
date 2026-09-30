@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Invoices\Application\Ports;
 
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
+use Tests\Support\Invoices\InvoiceIds;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\Invoices\FixedIdGenerator;
@@ -14,7 +15,7 @@ final class FixedIdGeneratorTest extends TestCase
     #[Test]
     public function it_returns_the_configured_id(): void
     {
-        $id = InvoiceId::generate();
+        $id = InvoiceIds::random();
         $generator = new FixedIdGenerator($id);
 
         self::assertSame($id, $generator->next());
@@ -23,7 +24,7 @@ final class FixedIdGeneratorTest extends TestCase
     #[Test]
     public function it_returns_the_same_id_on_repeated_calls(): void
     {
-        $id = InvoiceId::generate();
+        $id = InvoiceIds::random();
         $generator = new FixedIdGenerator($id);
 
         self::assertSame($id, $generator->next());

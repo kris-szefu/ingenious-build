@@ -17,11 +17,6 @@ final readonly class InvoiceId implements Stringable
         }
     }
 
-    public static function generate(): self
-    {
-        return new self(Uuid::uuid4()->toString());
-    }
-
     public static function fromString(string $value): self
     {
         return new self($value);

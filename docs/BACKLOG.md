@@ -14,7 +14,7 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 | 004 | Application ports | [004](./backlog/004-application-ports.md) | `feat(invoices): application ports` | done | |
 | 005 | Create-invoice use-case | [005](./backlog/005-create-invoice-use-case.md) | `feat(invoices): create-invoice use-case` | done | |
 | 006 | View-invoice use-case | [006](./backlog/006-view-invoice-use-case.md) | `feat(invoices): view-invoice use-case` | done | |
-| 007 | Eloquent persistence adapter | [007](./backlog/007-eloquent-persistence.md) | `feat(invoices): eloquent persistence adapter` | todo | |
+| 007 | Eloquent persistence adapter | [007](./backlog/007-eloquent-persistence.md) | `feat(invoices): eloquent persistence adapter` | done | |
 | 008 | POST /invoices | [008](./backlog/008-http-create-endpoint.md) | `feat(invoices): create endpoint` | todo | |
 | 009 | GET /invoices/{id} | [009](./backlog/009-http-view-endpoint.md) | `feat(invoices): view endpoint` | todo | |
 | 010 | Send-invoice use-case | [010](./backlog/010-send-invoice-use-case.md) | `feat(invoices): send use-case with notification facade` | todo | |
@@ -27,7 +27,7 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 
 ## Progress
 - Total: 16
-- Done: 6
+- Done: 7
 - In progress: 0
 - Blocked: 0
 
@@ -35,7 +35,9 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 Append one line per status change (newest first):
 
 ```
-2026-09-29  016  created            docs(invoices): spike openapi strategy (backlog entry)
+2026-09-30  007  in-progress → done  feat(invoices): eloquent persistence adapter   (aaf0532)
+2026-09-30  007  todo → in-progress  eloquent persistence adapter (models + repo + uuid generator)
+2026-09-30  016  created            docs(invoices): spike openapi strategy (backlog entry)
 2026-09-29  006  in-progress → done  feat(invoices): view-invoice use-case
 2026-09-29  006  todo → in-progress  view-invoice use-case (read DTO + handler)
 2026-09-29  005  in-progress → done  feat(invoices): create-invoice use-case

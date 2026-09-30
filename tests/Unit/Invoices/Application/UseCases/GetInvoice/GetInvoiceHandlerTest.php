@@ -11,6 +11,7 @@ use Modules\Invoices\Domain\Exceptions\InvoiceNotFound;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\CustomerName;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
+use Tests\Support\Invoices\InvoiceIds;
 use Modules\Invoices\Domain\ValueObjects\ProductName;
 use Modules\Invoices\Domain\ValueObjects\Quantity;
 use Modules\Invoices\Domain\ValueObjects\UnitPrice;
@@ -33,7 +34,7 @@ final class GetInvoiceHandlerTest extends TestCase
     #[Test]
     public function returns_view_dto_with_expected_shape_and_totals(): void
     {
-        $id = InvoiceId::generate();
+        $id = InvoiceIds::random();
         $invoice = Invoice::draft(
             $id,
             new CustomerName('Ada Lovelace'),
@@ -63,7 +64,7 @@ final class GetInvoiceHandlerTest extends TestCase
     #[Test]
     public function returns_view_with_empty_product_lines(): void
     {
-        $id = InvoiceId::generate();
+        $id = InvoiceIds::random();
         $this->repo->save(Invoice::draft(
             $id,
             new CustomerName('Ada Lovelace'),
@@ -81,7 +82,7 @@ final class GetInvoiceHandlerTest extends TestCase
     {
         $this->expectException(InvoiceNotFound::class);
 
-        $this->handler->handle(InvoiceId::generate());
+        $this->handler->handle(InvoiceIds::random());
     }
 }
 

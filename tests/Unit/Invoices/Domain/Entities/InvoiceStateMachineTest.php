@@ -12,6 +12,7 @@ use Modules\Invoices\Domain\Exceptions\InvoiceCannotBeSent;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\CustomerName;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
+use Tests\Support\Invoices\InvoiceIds;
 use Modules\Invoices\Domain\ValueObjects\ProductName;
 use Modules\Invoices\Domain\ValueObjects\Quantity;
 use Modules\Invoices\Domain\ValueObjects\UnitPrice;
@@ -23,7 +24,7 @@ final class InvoiceStateMachineTest extends TestCase
     private function draftWithLines(ProductLine ...$lines): Invoice
     {
         return Invoice::draft(
-            InvoiceId::generate(),
+            InvoiceIds::random(),
             new CustomerName('Ada Lovelace'),
             new CustomerEmail('ada@example.com'),
             array_values($lines),

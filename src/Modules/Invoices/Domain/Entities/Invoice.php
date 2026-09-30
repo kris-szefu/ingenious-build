@@ -41,6 +41,27 @@ final class Invoice
         return new self($id, $customerName, $customerEmail, StatusEnum::Draft, $productLines);
     }
 
+    /**
+     * Reconstitute an Invoice from persisted state. Bypasses transition guards
+     * on purpose — the caller is responsible for feeding valid data read from
+     * storage. Intended for use only by an `InvoiceRepositoryInterface`
+     * adapter; other callers should go through `::draft()` and the transition
+     * methods.
+     *
+     * @internal
+     *
+     * @param  list<ProductLine>  $productLines
+     */
+    public static function reconstitute(
+        InvoiceId $id,
+        CustomerName $customerName,
+        CustomerEmail $customerEmail,
+        StatusEnum $status,
+        array $productLines = [],
+    ): self {
+        return new self($id, $customerName, $customerEmail, $status, $productLines);
+    }
+
     public function status(): StatusEnum
     {
         return $this->status;

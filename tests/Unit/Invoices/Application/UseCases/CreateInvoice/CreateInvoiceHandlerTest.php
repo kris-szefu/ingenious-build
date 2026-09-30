@@ -10,6 +10,7 @@ use Modules\Invoices\Application\UseCases\CreateInvoice\ProductLineInput;
 use Modules\Invoices\Domain\Enums\StatusEnum;
 use Modules\Invoices\Domain\Exceptions\InvalidProductLine;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
+use Tests\Support\Invoices\InvoiceIds;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\Invoices\FixedIdGenerator;
@@ -25,7 +26,7 @@ final class CreateInvoiceHandlerTest extends TestCase
     {
         parent::setUp();
         $this->repo = new InMemoryInvoiceRepository();
-        $this->id = InvoiceId::generate();
+        $this->id = InvoiceIds::random();
         $this->handler = new CreateInvoiceHandler($this->repo, new FixedIdGenerator($this->id));
     }
 
