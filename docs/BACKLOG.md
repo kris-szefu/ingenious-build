@@ -35,7 +35,7 @@ Legend: `todo` · `in-progress` · `done` · `blocked` · `skipped`
 Append one line per status change (newest first):
 
 ```
-2026-09-30  007  in-progress → done  feat(invoices): eloquent persistence adapter   (aaf0532)
+2026-09-30  007  in-progress → done  feat(invoices): eloquent persistence adapter   (2524fe7)
 2026-09-30  007  todo → in-progress  eloquent persistence adapter (models + repo + uuid generator)
 2026-09-30  016  created            docs(invoices): spike openapi strategy (backlog entry)
 2026-09-29  006  in-progress → done  feat(invoices): view-invoice use-case
