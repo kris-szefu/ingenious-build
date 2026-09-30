@@ -9,9 +9,8 @@ use Modules\Invoices\Domain\Entities\Invoice;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
 
 /**
- * Recorded by
- * {@see Invoice::markSentToClient()} when
- * an invoice transitions `sending → sent-to-client`.
+ * Recorded by {@see Invoice::markSentToClient()}
+ * when an invoice transitions `sending → sent-to-client`.
  */
 final readonly class InvoiceSentToClient implements DomainEvent
 {

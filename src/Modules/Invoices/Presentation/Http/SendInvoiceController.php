@@ -8,7 +8,6 @@ use Illuminate\Http\Response;
 use Modules\Invoices\Application\UseCases\SendInvoice\SendInvoiceCommand;
 use Modules\Invoices\Application\UseCases\SendInvoice\SendInvoiceHandler;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final readonly class SendInvoiceController
 {
@@ -22,6 +21,6 @@ final readonly class SendInvoiceController
             new SendInvoiceCommand(InvoiceId::fromString($id)),
         );
 
-        return new Response('', HttpResponse::HTTP_ACCEPTED);
+        return new Response('', Response::HTTP_ACCEPTED);
     }
 }

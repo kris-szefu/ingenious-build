@@ -24,10 +24,12 @@ final readonly class LaravelEventDispatcher implements DomainEventDispatcherInte
         private Dispatcher $bus,
     ) {}
 
+    /**
+     * @param  iterable<DomainEvent>  $events
+     */
     public function dispatchAll(iterable $events): void
     {
         foreach ($events as $event) {
-            /** @var DomainEvent $event */
             $this->bus->dispatch($event);
         }
     }

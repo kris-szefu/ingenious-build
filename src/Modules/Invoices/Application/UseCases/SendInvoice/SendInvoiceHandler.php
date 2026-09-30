@@ -8,7 +8,6 @@ use Modules\Invoices\Application\Ports\CustomerNotifierInterface;
 use Modules\Invoices\Application\Ports\DomainEventDispatcherInterface;
 use Modules\Invoices\Application\Ports\InvoiceRepositoryInterface;
 use Modules\Invoices\Domain\Entities\Invoice;
-use Modules\Invoices\Domain\Events\DomainEvent;
 
 final readonly class SendInvoiceHandler
 {
@@ -20,7 +19,6 @@ final readonly class SendInvoiceHandler
 
     public function handle(SendInvoiceCommand $command): void
     {
-        /** @var list<DomainEvent> $recorded */
         $recorded = [];
 
         // The whole flow runs inside `updateLocked` so that concurrent send
