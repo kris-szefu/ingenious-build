@@ -20,21 +20,24 @@ src/Modules/
 
 ### Invoices module map
 
-Full rationale in [ADR 0002 — Invoices module structure](../adr/0002-invoices-module-structure.md).
+Full rationale in [ADR 0002 — Invoices module structure](../adr/0002-invoices-module-structure.md) and [ADR 0003 — DDD purity refactor](../adr/0003-ddd-purity-refactor.md).
 
 ```
 src/Modules/Invoices/
   Api/                  # (empty — nothing published cross-module yet)
   Domain/
-    Entities/           # Invoice, ProductLine
+    Entities/           # Invoice (aggregate root)
     ValueObjects/       # InvoiceId, CustomerName, CustomerEmail,
-                        # ProductName, Quantity, UnitPrice
+                        # ProductName, Quantity, UnitPrice, ProductLine
     Enums/              # StatusEnum { Draft, Sending, SentToClient }
-    Exceptions/         # InvoiceNotFound, InvalidInvoiceId,
+    Events/             # DomainEvent, InvoiceMarkedSending,
+                        # InvoiceSentToClient
+    Exceptions/         # InvoiceNotFound, InvalidInvoiceId, InvalidCustomer,
                         # InvoiceCannotBeSent, InvoiceCannotBeMarkedSent,
                         # InvalidProductLine
   Application/
-    Ports/              # InvoiceRepositoryInterface, IdGeneratorInterface
+    Ports/              # InvoiceRepositoryInterface, IdGeneratorInterface,
+                        # CustomerNotifierInterface, DomainEventDispatcherInterface
     UseCases/
       CreateInvoice/    # CreateInvoiceCommand + CreateInvoiceHandler
       GetInvoice/       # GetInvoiceHandler + InvoiceView / ProductLineView
@@ -44,6 +47,8 @@ src/Modules/Invoices/
     Ids/                # UuidGenerator
     Eloquent/           # InvoiceModel + product-line model
     Repositories/       # EloquentInvoiceRepository
+    Notifications/      # NotificationsCustomerNotifier (ACL to Notifications Api\)
+    Events/             # LaravelEventDispatcher
     Listeners/          # MarkInvoiceSentToClientListener
     Providers/          # InvoiceServiceProvider (bindings + Event::listen)
   Presentation/
@@ -60,11 +65,13 @@ src/Modules/Invoices/
 
 ### Dependency direction (across modules)
 
-Invoices imports **only** from `Modules\Notifications\Api\*`:
+Invoices imports **only** from `Modules\Notifications\Api\*`, and only inside `Infrastructure/`:
 
-- `Modules\Notifications\Api\NotificationFacadeInterface` — outbound port used by `SendInvoiceHandler`.
-- `Modules\Notifications\Api\Data\NotifyData` — outbound DTO.
+- `Modules\Notifications\Api\NotificationFacadeInterface` — outbound port used by `NotificationsCustomerNotifier` (the ACL adapter that implements Invoices' own `CustomerNotifierInterface`).
+- `Modules\Notifications\Api\Data\NotifyData` — outbound DTO, constructed only inside the ACL adapter.
 - `Modules\Notifications\Api\Events\WebhookDeliveredEvent` — inbound event consumed by `MarkInvoiceSentToClientListener`.
+
+`Application/` and `Domain/` have **zero** imports from `Modules\Notifications\*`. See [ADR 0003 §2](../adr/0003-ddd-purity-refactor.md).
 
 Notifications does **not** import anything from Invoices.
 
@@ -107,7 +114,7 @@ HTTP GET /api/invoices/{id}
   ← 200 { id, status, customer_*, product_lines[], total_price }
 ```
 
-### Send (synchronous — see ADR 0002 §2)
+### Send (synchronous — see ADR 0002 §2, ADR 0003 §3)
 
 ```
 HTTP POST /api/invoices/{id}/send
@@ -116,16 +123,24 @@ HTTP POST /api/invoices/{id}/send
       → InvoiceRepositoryInterface::updateLocked($id, $mutator)
           [ DB::transaction + SELECT ... FOR UPDATE ]
           → $mutator(Invoice):
-              → Invoice::ensureCanBeSent()          (guards — no mutation)
-              → NotificationFacadeInterface::notify(NotifyData{ resourceId = invoice.id, ... })
-                  → NotificationFacade (Notifications module)
-                    → DriverInterface::send         (DummyDriver / FakeDriver in tests)
-              → Invoice::send()                     (draft → sending)
+              → Invoice::assertCanBeSent()         (guards — no mutation)
+              → CustomerNotifierInterface::notifyInvoiceReady(
+                    invoice.id, invoice.customerName, invoice.customerEmail)
+                  → NotificationsCustomerNotifier (Invoices Infrastructure ACL)
+                    → NotificationFacadeInterface::notify(NotifyData{...})
+                      → NotificationFacade (Notifications module)
+                        → DriverInterface::send    (DummyDriver / FakeDriver)
+              → Invoice::send()                    (draft → sending; records
+                                                    InvoiceMarkedSending)
           [ persist + commit ]
+      → DomainEventDispatcherInterface::dispatchAll(pulledEvents)
+          → LaravelEventDispatcher → Illuminate\Events\Dispatcher
   ← 202 (empty body)
 ```
 
-Guard order matters: the domain check runs **before** the notification call so a failure never triggers a customer email. The state transition runs **after** the notification returns so a facade failure leaves the invoice in `draft` and the request retryable. The pessimistic row lock serialises concurrent send requests for the same invoice — the losing request blocks until the winner commits, then its `ensureCanBeSent()` guard fires (invoice is now `sending`) before any second notification is dispatched.
+Guard order matters: the domain check runs **before** the notification call so a failure never triggers a customer email. The state transition runs **after** the notification returns so a facade failure leaves the invoice in `draft` and the request retryable. `Invoice::send()` re-runs the same guards internally — callers cannot bypass them by mutating state without going through `send()`. The pessimistic row lock serialises concurrent send requests for the same invoice — the losing request blocks until the winner commits, then its `assertCanBeSent()` guard fires (invoice is now `sending`) before any second notification is dispatched.
+
+Recorded domain events (`InvoiceMarkedSending`) are dispatched **after** the transaction commits, so subscribers never observe an in-flight aggregate. No listeners are wired today; the seam exists for future consumers (audit, async fan-out, outbox writer). See [ADR 0003 §1, §3](../adr/0003-ddd-purity-refactor.md).
 
 ### Deliver (webhook → listener → state transition)
 
@@ -141,8 +156,10 @@ HTTP GET /api/notification/hook/delivered/{reference}    (Notifications module)
                                        new MarkInvoiceDeliveredCommand(
                                          InvoiceId::fromString($event->resourceId)))
                                      → InvoiceRepositoryInterface::getById
-                                     → Invoice::markSentToClient()   (sending → sent-to-client)
+                                     → Invoice::markSentToClient()   (sending → sent-to-client;
+                                                                      records InvoiceSentToClient)
                                      → InvoiceRepositoryInterface::save
+                                     → DomainEventDispatcherInterface::dispatchAll
 ```
 
 Idempotency + missing-invoice policy: unknown reference or invoice not in `sending` is logged (PSR-3 `warning`) and swallowed. Webhooks are at-least-once by nature; failing loudly would surface Notifications-side races as Invoices-side 500s. See ADR 0002 §5.
@@ -159,4 +176,5 @@ The README refers to the delivery event as `ResourceDeliveredEvent`. The class a
 ## ADR index
 - [0001 — OpenAPI strategy](../adr/0001-openapi-strategy.md)
 - [0002 — Invoices module structure](../adr/0002-invoices-module-structure.md)
+- [0003 — DDD purity refactor](../adr/0003-ddd-purity-refactor.md)
 

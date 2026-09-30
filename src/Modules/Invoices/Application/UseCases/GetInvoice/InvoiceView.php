@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Invoices\Application\UseCases\GetInvoice;
 
 use Modules\Invoices\Domain\Entities\Invoice;
-use Modules\Invoices\Domain\Entities\ProductLine;
+use Modules\Invoices\Domain\ValueObjects\ProductLine;
 
 final readonly class InvoiceView
 {

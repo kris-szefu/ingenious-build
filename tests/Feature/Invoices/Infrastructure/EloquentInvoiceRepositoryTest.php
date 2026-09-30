@@ -6,11 +6,11 @@ namespace Tests\Feature\Invoices\Infrastructure;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Invoices\Domain\Entities\Invoice;
-use Modules\Invoices\Domain\Entities\ProductLine;
 use Modules\Invoices\Domain\Enums\StatusEnum;
 use Modules\Invoices\Domain\Exceptions\InvoiceNotFound;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\CustomerName;
+use Modules\Invoices\Domain\ValueObjects\ProductLine;
 use Modules\Invoices\Domain\ValueObjects\ProductName;
 use Modules\Invoices\Domain\ValueObjects\Quantity;
 use Modules\Invoices\Domain\ValueObjects\UnitPrice;

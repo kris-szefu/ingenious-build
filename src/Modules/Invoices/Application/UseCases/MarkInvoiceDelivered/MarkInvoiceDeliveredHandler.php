@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Invoices\Application\UseCases\MarkInvoiceDelivered;
 
+use Modules\Invoices\Application\Ports\DomainEventDispatcherInterface;
 use Modules\Invoices\Application\Ports\InvoiceRepositoryInterface;
 use Modules\Invoices\Domain\Exceptions\InvoiceCannotBeMarkedSent;
 use Modules\Invoices\Domain\Exceptions\InvoiceNotFound;
@@ -28,6 +29,7 @@ final readonly class MarkInvoiceDeliveredHandler
     public function __construct(
         private InvoiceRepositoryInterface $invoices,
         private LoggerInterface $logger,
+        private DomainEventDispatcherInterface $events,
     ) {}
 
     public function handle(MarkInvoiceDeliveredCommand $command): void
@@ -55,5 +57,10 @@ final readonly class MarkInvoiceDeliveredHandler
         }
 
         $this->invoices->save($invoice);
+
+        // Dispatch after successful persist so subscribers never observe an
+        // in-flight aggregate. Nothing is dispatched on the swallow paths
+        // above because no event was recorded. See ADR 0003.
+        $this->events->dispatchAll($invoice->pullRecordedEvents());
     }
 }

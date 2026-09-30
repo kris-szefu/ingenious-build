@@ -5,16 +5,25 @@ declare(strict_types=1);
 namespace Modules\Invoices\Domain\Entities;
 
 use Modules\Invoices\Domain\Enums\StatusEnum;
+use Modules\Invoices\Domain\Events\DomainEvent;
+use Modules\Invoices\Domain\Events\InvoiceMarkedSending;
+use Modules\Invoices\Domain\Events\InvoiceSentToClient;
 use Modules\Invoices\Domain\Exceptions\InvoiceCannotBeMarkedSent;
 use Modules\Invoices\Domain\Exceptions\InvoiceCannotBeSent;
 use Modules\Invoices\Domain\ValueObjects\CustomerEmail;
 use Modules\Invoices\Domain\ValueObjects\CustomerName;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
+use Modules\Invoices\Domain\ValueObjects\ProductLine;
+use Modules\Invoices\Domain\ValueObjects\Quantity;
+use Modules\Invoices\Domain\ValueObjects\UnitPrice;
 
 final class Invoice
 {
     /** @var list<ProductLine> */
     private array $productLines;
+
+    /** @var list<DomainEvent> */
+    private array $recordedEvents = [];
 
     /**
      * @param  list<ProductLine>  $productLines
@@ -81,26 +90,71 @@ final class Invoice
         ));
     }
 
-    public function send(): void
-    {
-        $this->ensureCanBeSent();
-
-        $this->status = StatusEnum::Sending;
-    }
-
     /**
-     * Verify the invoice satisfies every guard required to transition to
-     * `sending`, without mutating state. Callers that need to run side effects
-     * (e.g. notify the customer) before the transition should invoke this
-     * first, then call {@see self::send()} once the side effect has succeeded.
+     * Transition `draft → sending`. Records {@see InvoiceMarkedSending}.
      *
-     * Positive `quantity` and `unitPrice` are enforced by the {@see Quantity}
-     * and {@see UnitPrice} value objects at construction time, so an invoice
-     * built through the public API cannot carry an invalid line here.
+     * Guards are re-checked here so callers cannot bypass them, and so the
+     * aggregate always owns the last word before mutation. Callers that
+     * need to run a side effect *before* the transition (e.g. notify the
+     * customer) should call {@see self::assertCanBeSent()} first to fail
+     * fast without triggering the side effect.
      *
      * @throws InvoiceCannotBeSent
      */
-    public function ensureCanBeSent(): void
+    public function send(): void
+    {
+        $this->assertCanBeSent();
+
+        $this->status = StatusEnum::Sending;
+        $this->recordedEvents[] = new InvoiceMarkedSending($this->id);
+    }
+
+    /**
+     * Transition `sending → sent-to-client`. Records
+     * {@see InvoiceSentToClient}.
+     *
+     * @throws InvoiceCannotBeMarkedSent
+     */
+    public function markSentToClient(): void
+    {
+        if ($this->status !== StatusEnum::Sending) {
+            throw InvoiceCannotBeMarkedSent::notInSending($this->status);
+        }
+
+        $this->status = StatusEnum::SentToClient;
+        $this->recordedEvents[] = new InvoiceSentToClient($this->id);
+    }
+
+    /**
+     * Return and clear the events recorded since the last pull. Intended for
+     * post-commit dispatch by the Application layer; the Domain never
+     * dispatches its own events.
+     *
+     * @return list<DomainEvent>
+     */
+    public function pullRecordedEvents(): array
+    {
+        $events = $this->recordedEvents;
+        $this->recordedEvents = [];
+
+        return $events;
+    }
+
+    /**
+     * Assert (throw on failure) that every send precondition holds, without
+     * mutating state. Callers that need to run side effects (e.g. notify the
+     * customer) before the transition should invoke this first, then call
+     * {@see self::send()} once the side effect has succeeded.
+     *
+     * Positive `quantity` and `unitPrice` are enforced by the
+     * {@see Quantity} and
+     * {@see UnitPrice} value objects at
+     * construction time, so an invoice built through the public API cannot
+     * carry an invalid line here.
+     *
+     * @throws InvoiceCannotBeSent
+     */
+    public function assertCanBeSent(): void
     {
         if ($this->status !== StatusEnum::Draft) {
             throw InvoiceCannotBeSent::notInDraft($this->status);
@@ -109,14 +163,5 @@ final class Invoice
         if ($this->productLines === []) {
             throw InvoiceCannotBeSent::hasNoProductLines();
         }
-    }
-
-    public function markSentToClient(): void
-    {
-        if ($this->status !== StatusEnum::Sending) {
-            throw InvoiceCannotBeMarkedSent::notInSending($this->status);
-        }
-
-        $this->status = StatusEnum::SentToClient;
     }
 }

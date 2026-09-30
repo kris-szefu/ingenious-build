@@ -26,9 +26,9 @@ Legend: `todo` · `done` · `blocked` · `skipped`
 | 016 | Spike: OpenAPI strategy | [016](./backlog/016-spike-openapi-strategy.md) | `docs(invoices): spike openapi strategy (ADR)` | done | ADR 0001 — adopt contract-first (Option D) with `jane-php/open-api` |
 | 017 | OpenAPI spec, generated DTOs, assemblers | [017](./backlog/017-openapi-spec.md) | `feat(invoices): openapi contract, generated dtos, and assemblers` | todo | Follow-up from ADR 0001; depends on 008/009/011; nice-to-have |
 | 018 | OpenAPI CI: lint + regenerate-diff guard | [018](./backlog/018-openapi-ci-check.md) | `chore(invoices): lint openapi and enforce regeneration in ci` | todo | Follow-up from ADR 0001; depends on 017; nice-to-have |
-| 019 | DDD purity refactor (strict) | [019](./backlog/019-ddd-purity-refactor.md) | `refactor(invoices): strict DDD events, ACL notifier, and ProductLine VO` | todo | Nice-to-have; after 014; domain events + ACL + ProductLine VO |
+| 019 | DDD purity refactor (strict) | [019](./backlog/019-ddd-purity-refactor.md) | `refactor(invoices): strict DDD events, ACL notifier, and ProductLine VO` | done | ADR 0003; `CustomerNotifierInterface` + `DomainEventDispatcherInterface`; `ProductLine` → VO |
 
 ## Progress
 - Total: 19
-- Done: 15
+- Done: 16
 - Blocked: 0

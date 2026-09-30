@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Modules\Invoices\Domain\Entities;
+namespace Modules\Invoices\Domain\ValueObjects;
 
-use Modules\Invoices\Domain\ValueObjects\ProductName;
-use Modules\Invoices\Domain\ValueObjects\Quantity;
-use Modules\Invoices\Domain\ValueObjects\UnitPrice;
-
+/**
+ * A product line on an invoice. Pure value object — no identity, immutable.
+ *
+ * Equality is structural (product name + quantity + unit price). Invariants
+ * are delegated to the composing value objects:
+ * {@see ProductName}, {@see Quantity}, {@see UnitPrice}.
+ */
 final readonly class ProductLine
 {
     public function __construct(

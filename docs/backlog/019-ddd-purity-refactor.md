@@ -45,14 +45,14 @@ not application orchestration of foreign types.
   - Queue infrastructure beyond a minimal outbox table/job.
 
 ## Acceptance criteria
-- [ ] `Invoice` raises domain events for send and delivered transitions; tests assert recorded events.
-- [ ] Application layer has **zero** imports from `Modules\Notifications\*`
+- [x] `Invoice` raises domain events for send and delivered transitions; tests assert recorded events.
+- [x] Application layer has **zero** imports from `Modules\Notifications\*`
       (only Infrastructure adapter may import Notifications `Api\`).
-- [ ] `SendInvoiceHandler` depends on an Invoices-owned notifier port, not `NotifyData`.
-- [ ] `ProductLine` lives under ValueObjects (or has an explicit identity + repo concern).
-- [ ] Domain + Application still have zero Laravel / Eloquent imports.
-- [ ] Existing behavioural tests still green (HTTP contract unchanged unless ADR says otherwise).
-- [ ] New ADR `0003-ddd-purity-refactor.md` records notify-vs-transition ordering choice
+- [x] `SendInvoiceHandler` depends on an Invoices-owned notifier port, not `NotifyData`.
+- [x] `ProductLine` lives under ValueObjects (or has an explicit identity + repo concern).
+- [x] Domain + Application still have zero Laravel / Eloquent imports.
+- [x] Existing behavioural tests still green (HTTP contract unchanged unless ADR says otherwise).
+- [x] New ADR `0003-ddd-purity-refactor.md` records notify-vs-transition ordering choice
       (outbox vs notify-before-persist) and why.
 
 ## Tests
@@ -70,4 +70,4 @@ not application orchestration of foreign types.
 `refactor(invoices): strict DDD events, ACL notifier, and ProductLine VO`
 
 ## Status
-todo
+done

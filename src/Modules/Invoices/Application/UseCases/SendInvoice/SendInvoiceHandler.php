@@ -4,47 +4,55 @@ declare(strict_types=1);
 
 namespace Modules\Invoices\Application\UseCases\SendInvoice;
 
+use Modules\Invoices\Application\Ports\CustomerNotifierInterface;
+use Modules\Invoices\Application\Ports\DomainEventDispatcherInterface;
 use Modules\Invoices\Application\Ports\InvoiceRepositoryInterface;
 use Modules\Invoices\Domain\Entities\Invoice;
-use Modules\Notifications\Api\Data\NotifyData;
-use Modules\Notifications\Api\NotificationFacadeInterface;
-use Ramsey\Uuid\Uuid;
+use Modules\Invoices\Domain\Events\DomainEvent;
 
 final readonly class SendInvoiceHandler
 {
     public function __construct(
         private InvoiceRepositoryInterface $invoices,
-        private NotificationFacadeInterface $notifications,
+        private CustomerNotifierInterface $notifier,
+        private DomainEventDispatcherInterface $events,
     ) {}
 
     public function handle(SendInvoiceCommand $command): void
     {
+        /** @var list<DomainEvent> $recorded */
+        $recorded = [];
+
         // The whole flow runs inside `updateLocked` so that concurrent send
         // requests for the same invoice are serialised on a pessimistic row
         // lock. A losing request blocks until the winner commits, then sees
-        // `status = sending` and its `ensureCanBeSent()` guard throws — no
-        // second customer notification is dispatched.
-        $this->invoices->updateLocked($command->id, function (Invoice $invoice): void {
-            // Guard first: validate every send precondition without mutating
-            // state so that a failure never triggers a customer notification.
-            $invoice->ensureCanBeSent();
+        // `status = sending` and its guard throws — no second customer
+        // notification is dispatched.
+        //
+        // Guard order:
+        //   1. Invoice::assertCanBeSent() — pure query, no mutation, no side
+        //      effect. Fails fast so the notifier is never called for an
+        //      invoice that cannot legally be sent.
+        //   2. Notify the customer via the outbound port.
+        //   3. Invoice::send() — re-checks guards internally and mutates.
+        // If the notifier throws, `updateLocked` rolls the transaction back
+        // and the invoice stays draft in storage. Recorded domain events
+        // are dispatched after commit so subscribers never observe an
+        // in-flight aggregate. See ADR 0003.
+        $this->invoices->updateLocked($command->id, function (Invoice $invoice) use (&$recorded): void {
+            $invoice->assertCanBeSent();
 
-            $this->notifications->notify($this->notifyDataFor($invoice));
+            $this->notifier->notifyInvoiceReady(
+                $invoice->id,
+                $invoice->customerName,
+                $invoice->customerEmail,
+            );
 
-            // Only transition after the notification side effect has succeeded.
-            // If the facade throws, `updateLocked` rolls the transaction back
-            // and the invoice stays draft in storage.
             $invoice->send();
-        });
-    }
 
-    private function notifyDataFor(Invoice $invoice): NotifyData
-    {
-        return new NotifyData(
-            resourceId: Uuid::fromString($invoice->id->value),
-            toEmail: $invoice->customerEmail->value,
-            subject: "Invoice {$invoice->id->value}",
-            message: "Dear {$invoice->customerName->value}, please find your invoice attached.",
-        );
+            $recorded = $invoice->pullRecordedEvents();
+        });
+
+        $this->events->dispatchAll($recorded);
     }
 }
