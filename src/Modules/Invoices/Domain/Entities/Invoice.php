@@ -83,6 +83,21 @@ final class Invoice
 
     public function send(): void
     {
+        $this->ensureCanBeSent();
+
+        $this->status = StatusEnum::Sending;
+    }
+
+    /**
+     * Verify the invoice satisfies every guard required to transition to
+     * `sending`, without mutating state. Callers that need to run side effects
+     * (e.g. notify the customer) before the transition should invoke this
+     * first, then call {@see self::send()} once the side effect has succeeded.
+     *
+     * @throws InvoiceCannotBeSent
+     */
+    public function ensureCanBeSent(): void
+    {
         if ($this->status !== StatusEnum::Draft) {
             throw InvoiceCannotBeSent::notInDraft($this->status);
         }
@@ -96,8 +111,6 @@ final class Invoice
                 throw InvoiceCannotBeSent::hasInvalidProductLine();
             }
         }
-
-        $this->status = StatusEnum::Sending;
     }
 
     public function markSentToClient(): void

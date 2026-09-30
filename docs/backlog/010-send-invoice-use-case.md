@@ -18,10 +18,10 @@ As the invoice module, I want a use-case that emails the customer and moves the 
   - HTTP shell (story 011); delivery listener (story 012).
 
 ## Acceptance criteria
-- [ ] Facade invoked exactly once on happy path.
-- [ ] Status persisted as `sending` only after facade returns.
-- [ ] Facade throw → no persisted state change.
-- [ ] Invalid status / invalid lines → typed domain exceptions, facade not called.
+- [x] Facade invoked exactly once on happy path.
+- [x] Status persisted as `sending` only after facade returns.
+- [x] Facade throw → no persisted state change.
+- [x] Invalid status / invalid lines → typed domain exceptions, facade not called.
 
 ## Tests
 - Unit (Mockery facade):
@@ -38,5 +38,4 @@ As the invoice module, I want a use-case that emails the customer and moves the 
 `feat(invoices): send use-case with notification facade`
 
 ## Status
-todo
-
+done

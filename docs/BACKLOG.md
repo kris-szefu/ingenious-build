@@ -17,7 +17,7 @@ Legend: `todo` · `done` · `blocked` · `skipped`
 | 007 | Eloquent persistence adapter | [007](./backlog/007-eloquent-persistence.md) | `feat(invoices): eloquent persistence adapter` | done | |
 | 008 | POST /invoices | [008](./backlog/008-http-create-endpoint.md) | `feat(invoices): create endpoint` | done | |
 | 009 | GET /invoices/{id} | [009](./backlog/009-http-view-endpoint.md) | `feat(invoices): view endpoint` | done | |
-| 010 | Send-invoice use-case | [010](./backlog/010-send-invoice-use-case.md) | `feat(invoices): send use-case with notification facade` | todo | |
+| 010 | Send-invoice use-case | [010](./backlog/010-send-invoice-use-case.md) | `feat(invoices): send use-case with notification facade` | done | |
 | 011 | POST /invoices/{id}/send | [011](./backlog/011-http-send-endpoint.md) | `feat(invoices): send endpoint` | todo | |
 | 012 | Webhook delivered listener | [012](./backlog/012-delivery-event-listener.md) | `feat(invoices): react to webhook delivered event` | todo | |
 | 013 | ADR + architecture docs | [013](./backlog/013-adr-and-architecture-docs.md) | `docs(invoices): add ADR and update architecture docs` | todo | |
@@ -29,5 +29,5 @@ Legend: `todo` · `done` · `blocked` · `skipped`
 
 ## Progress
 - Total: 18
-- Done: 10
+- Done: 11
 - Blocked: 0
