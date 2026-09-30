@@ -17,4 +17,3 @@ interface InvoiceRepositoryInterface
 
     public function save(Invoice $invoice): void;
 }
-

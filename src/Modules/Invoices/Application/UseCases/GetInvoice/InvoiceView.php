@@ -43,4 +43,3 @@ final readonly class InvoiceView
         ];
     }
 }
-

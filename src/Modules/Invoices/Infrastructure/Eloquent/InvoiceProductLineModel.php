@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Invoices\Infrastructure\Eloquent;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 /**
  * @property string $id
@@ -46,4 +46,3 @@ final class InvoiceProductLineModel extends Model
         return $this->belongsTo(InvoiceModel::class, 'invoice_id');
     }
 }
-

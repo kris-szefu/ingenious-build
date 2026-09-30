@@ -10,4 +10,3 @@ interface IdGeneratorInterface
 {
     public function next(): InvoiceId;
 }
-

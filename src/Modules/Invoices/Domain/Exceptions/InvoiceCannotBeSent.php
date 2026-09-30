@@ -24,4 +24,3 @@ final class InvoiceCannotBeSent extends DomainException
         return new self('All product lines must have positive quantity and unit price.');
     }
 }
-

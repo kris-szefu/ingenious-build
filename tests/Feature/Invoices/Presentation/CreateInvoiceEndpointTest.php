@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Invoices\Presentation;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -84,4 +83,3 @@ final class CreateInvoiceEndpointTest extends TestCase
             ]);
     }
 }
-

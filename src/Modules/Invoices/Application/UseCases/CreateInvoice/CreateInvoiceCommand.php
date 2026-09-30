@@ -15,4 +15,3 @@ final readonly class CreateInvoiceCommand
         public array $productLines = [],
     ) {}
 }
-

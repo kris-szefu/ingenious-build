@@ -14,4 +14,3 @@ final class InvoiceCannotBeMarkedSent extends DomainException
         return new self("Invoice can only be marked sent-to-client from sending status, current: {$current->value}.");
     }
 }
-

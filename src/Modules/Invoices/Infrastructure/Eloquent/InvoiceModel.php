@@ -44,4 +44,3 @@ final class InvoiceModel extends Model
         return $this->hasMany(InvoiceProductLineModel::class, 'invoice_id');
     }
 }
-

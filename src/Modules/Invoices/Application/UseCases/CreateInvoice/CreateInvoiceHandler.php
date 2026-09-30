@@ -47,4 +47,3 @@ final readonly class CreateInvoiceHandler
         return $id;
     }
 }
-
