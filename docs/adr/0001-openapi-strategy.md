@@ -108,6 +108,15 @@ Answers to the three questions from 016's acceptance criteria:
   `src/Modules/Invoices/Presentation/Http/Generated/`. Generated code never crosses
   the module boundary into `Application/` or `Domain/`; assemblers form the seam.
 
+### Amendment (shipped YAML vs RFC 7807 sketch)
+
+The hand-authored `docs/api/openapi.yaml` that ships with the submission documents
+the **live** error shapes from `bootstrap/app.php`: `Error` (`{ message }`) and
+`ValidationError` (`{ message, errors }`). The illustrative RFC 7807 `Problem`
+schema in the prototype snippet below is **deferred** until generated DTOs /
+assemblers land (017). Contract-first still holds; the error media type is just
+simpler than the spike sketch.
+
 ## Consequences
 
 Easier:

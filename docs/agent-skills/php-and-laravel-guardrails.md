@@ -25,22 +25,23 @@ Banned in `Domain/` and `Application/` (allowed only in `Infrastructure/` or `Pr
 - **Static state / singletons / service location** inside domain or application services (no `app()->make(...)`).
 
 Instead:
-- Inject collaborators via the **constructor** (repositories, clocks, id generators, notification facade interface, etc.).
+- Inject collaborators via the **constructor** (repositories, clocks, id generators, module-owned notifier ports, etc.).
 - For "now": inject a `ClockInterface` (or pass `DateTimeImmutable`), don't call `now()`.
 - For config values: inject typed config objects / primitives resolved in the ServiceProvider.
 - For current user: pass user id / value object from the controller into the application service.
-- For dispatching events: use a small `DomainEventDispatcher` port; wire Laravel's dispatcher in the ServiceProvider.
+- For customer notifications: inject an Invoices-owned port (e.g. `CustomerNotifierInterface`); map to `Modules\Notifications\Api\*` only in an Infrastructure ACL adapter.
+- For dispatching domain events: use a small `DomainEventDispatcherInterface` port; wire Laravel's dispatcher in the ServiceProvider.
 
 ## Rule 3 — Keep it simple
 - Plain `final` class with a constructor > Factory/Builder/Strategy hierarchy.
-- No interfaces with a single implementation unless they cross a module or layer boundary (repository, clock, notification facade — yes; internal helper — no).
+- No interfaces with a single implementation unless they cross a module or layer boundary (repository, clock, customer notifier, domain-event dispatcher — yes; internal helper — no).
 - No abstract base classes "just in case". Compose, don't inherit.
 - No premature CQRS, mediators, or command buses. A method on an application service is enough.
 - If a value object has no invariants, use a `readonly` DTO.
 
 ## Rule 4 — Naming & tooling
 - PascalCase classes, camelCase methods, `snake_case` DB columns, `kebab-case` routes.
-- One typed domain exception per invariant (`InvoiceCannotBeSent`, `InvalidProductLine`).
+- One typed domain exception per invariant (`InvoiceCannotBeSent`, `InvalidProductLine`, `InvalidCustomer`, …).
 - No `null` returns for "not found" domain reads — throw a typed domain exception.
 - Run `vendor/bin/pint` before committing.
 

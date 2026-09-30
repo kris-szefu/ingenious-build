@@ -5,7 +5,14 @@
 - **Deciders:** maintainer
 - **Related backlog:** [013 — ADR + architecture docs](../backlog/013-adr-and-architecture-docs.md)
 - **Related skills:** [`architecture.md`](../agent-skills/architecture.md), [`module-boundaries-guardrails.md`](../agent-skills/module-boundaries-guardrails.md), [`invoice-domain.md`](../agent-skills/invoice-domain.md), [`laravel-conventions.md`](../agent-skills/laravel-conventions.md)
-- **See also:** [ADR 0001 — OpenAPI strategy](./0001-openapi-strategy.md)
+- **See also:** [ADR 0001 — OpenAPI strategy](./0001-openapi-strategy.md), [ADR 0003 — DDD purity refactor](./0003-ddd-purity-refactor.md)
+
+> **Amendment:** §2–§3 below describe the send/notify wiring as of this ADR.
+> [ADR 0003](./0003-ddd-purity-refactor.md) supersedes the Application-layer details:
+> `assertCanBeSent()` (rename), Invoices-owned `CustomerNotifierInterface` + ACL
+> adapter (replacing direct `NotificationFacadeInterface` / `notifyDataFor()`),
+> and post-commit domain-event dispatch. The synchronous + `updateLocked` policy
+> and invoice-id-as-`resourceId` correlation remain in force.
 
 ## Context
 
@@ -45,6 +52,11 @@ Rules (enforced by `module-boundaries-guardrails`):
 
 ### 2. Send is synchronous, and serialised by a pessimistic row lock
 
+> **Superseded in part by [ADR 0003](./0003-ddd-purity-refactor.md).** Current handler order:
+> `assertCanBeSent()` → `CustomerNotifierInterface::notifyInvoiceReady(...)` →
+> `Invoice::send()` inside `updateLocked`; domain events dispatched after commit.
+> Historical wording below kept for decision context.
+
 `SendInvoiceHandler::handle()` runs the entire send flow in the request thread, wrapped in a database transaction that pessimistically locks the invoice row:
 
 1. `InvoiceRepositoryInterface::updateLocked($id, $mutator)` opens a transaction and does `SELECT ... FOR UPDATE` on the invoice.
@@ -63,6 +75,10 @@ Trade-off: if the notification path becomes slow, the lock is held for the durat
 
 ### 3. Invoice id is the notification reference id
 
+> **Superseded in part by [ADR 0003](./0003-ddd-purity-refactor.md).** Correlation is unchanged
+> (invoice UUID = `resourceId`); mapping to `NotifyData` now lives in
+> `NotificationsCustomerNotifier`, not in `SendInvoiceHandler`.
+
 `SendInvoiceHandler::notifyDataFor()` sets `NotifyData::$resourceId` to the invoice's UUID. When the Notifications module dispatches `WebhookDeliveredEvent`, `event->resourceId` is the same UUID, and `MarkInvoiceSentToClientListener` uses it directly as the invoice id (`InvoiceId::fromString(...)`).
 
 Rationale:
@@ -80,8 +96,9 @@ Rationale:
 |-----------------------------|------------|-------|
 | `InvoiceNotFound`           | `404`      | `bootstrap/app.php` global renderer |
 | `InvalidInvoiceId` (bad UUID) | `404`      | `bootstrap/app.php` global renderer |
-| `InvoiceCannotBeSent` (non-draft, no lines, invalid lines) | `422` | `bootstrap/app.php` global renderer |
-| `InvalidProductLine` (create-time) | `422` | `bootstrap/app.php` global renderer |
+| `InvoiceCannotBeSent` (non-draft / no product lines) | `422` | `bootstrap/app.php` global renderer |
+| `InvalidProductLine` (create-time qty/price) | `422` | `bootstrap/app.php` global renderer |
+| `InvalidCustomer` (name / email VO) | `422` | `bootstrap/app.php` global renderer |
 | FormRequest validation (`CreateInvoiceRequest`) | `422` | Laravel default |
 
 Rationale for **422, not 409**, on illegal state transitions:
@@ -111,7 +128,7 @@ Easier:
 - Every domain rule is unit-testable without spinning up Laravel — `Domain/` and `Application/` have zero framework imports.
 - Swapping persistence (SQLite → Postgres → in-memory for tests) is a one-line change in `InvoiceServiceProvider::register()`.
 - Swapping the notification driver is a one-line container rebind (already exercised by `FakeDriver` in feature tests).
-- The `bootstrap/app.php` renderer table is the single source of truth for HTTP status mapping — reviewers see all five renderers in one place.
+- The `bootstrap/app.php` renderer table is the single source of truth for HTTP status mapping — reviewers see all domain exception renderers in one place.
 - The listener is a two-line adapter; the delivery policy is unit-tested in `MarkInvoiceDeliveredHandlerTest` without any HTTP or event-dispatcher machinery.
 
 Harder:

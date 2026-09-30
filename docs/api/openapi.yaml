@@ -2,22 +2,36 @@ openapi: 3.1.0
 info:
   title: Invoices API
   version: "1.0.0"
+  license:
+    name: Proprietary
+    url: https://example.com/license
   description: |
     HTTP contract for the Invoices module. Three endpoints cover the full
-    lifecycle: create a draft, view it with computed totals, and send it via
-    the Notifications facade. A fourth (webhook) endpoint lives in the
-    Notifications module and is not part of this contract.
+    lifecycle: create a draft, view it with computed totals, and send it
+    (customer notification via the Invoices ACL → Notifications module).
+    A fourth (webhook) endpoint lives in the Notifications module and is
+    not part of this contract.
 
     This file is authored by hand and is the **source of truth for the HTTP
     surface** (ADR 0001). Generated PHP DTOs, hand-written assemblers, and CI
     lint/regeneration guards are documented follow-ups (backlog 017 / 018);
     the current controllers still map Laravel `FormRequest` input to
     Application DTOs directly.
+
+    Error bodies match the live `bootstrap/app.php` renderers: a simple
+    `{ "message": "…" }` object (`Error`), plus Laravel's `{ "message", "errors" }`
+    for FormRequest failures (`ValidationError`). RFC 7807 `Problem` from the
+    ADR 0001 sketch is **not** implemented yet.
 servers:
-  - url: http://localhost
-    description: Local Sail
+  - url: http://localhost:{port}
+    description: Local Sail (`APP_PORT`, default 80)
+    variables:
+      port:
+        default: "80"
+security: []
 tags:
   - name: Invoices
+    description: Draft / view / send invoice HTTP surface.
 
 paths:
   /api/invoices:
@@ -25,6 +39,7 @@ paths:
       tags: [Invoices]
       operationId: createInvoice
       summary: Create a draft invoice
+      security: []
       requestBody:
         required: true
         content:
@@ -62,11 +77,16 @@ paths:
                     total_unit_price: 42000
                 total_price: 42000
         '422':
-          description: Validation error (Laravel `FormRequest`) or invalid customer / product line at the domain boundary.
+          description: |
+            Either Laravel `FormRequest` validation (`ValidationError` with
+            `errors`) or a domain value-object rejection (`Error` with
+            `message` only — `InvalidCustomer` / `InvalidProductLine`).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationError'
+                oneOf:
+                  - $ref: '#/components/schemas/ValidationError'
+                  - $ref: '#/components/schemas/Error'
               examples:
                 laravelValidation:
                   summary: Laravel FormRequest validation failure
@@ -76,7 +96,7 @@ paths:
                       customer_email:
                         - The customer email field must be a valid email address.
                 domainInvariant:
-                  summary: Domain value-object rejection
+                  summary: Domain value-object rejection (no `errors` map)
                   value:
                     message: Product line quantity must be greater than zero.
 
@@ -85,6 +105,7 @@ paths:
       tags: [Invoices]
       operationId: viewInvoice
       summary: View an invoice with computed totals
+      security: []
       parameters:
         - $ref: '#/components/parameters/InvoiceId'
       responses:
@@ -118,17 +139,22 @@ paths:
     post:
       tags: [Invoices]
       operationId: sendInvoice
-      summary: Send a draft invoice via the Notifications facade
+      summary: Send a draft invoice (notify customer, move to sending)
       description: |
-        Guards then notifies then transitions `draft → sending` under a
-        pessimistic row lock (see architecture docs, "Send" flow).
-        The response body is intentionally empty; clients should re-fetch
-        the invoice via `viewInvoice` if the new status is needed.
+        Inside a pessimistic row lock: `assertCanBeSent` → Invoices
+        `CustomerNotifierInterface` (ACL to Notifications) → `Invoice::send()`
+        (`draft → sending`). See architecture docs and ADR 0003.
+
+        On success the response body is **empty** (HTTP 202, zero-length body).
+        Clients should re-fetch via `viewInvoice` if the new status is needed.
+      security: []
       parameters:
         - $ref: '#/components/parameters/InvoiceId'
       responses:
         '202':
-          description: Notification dispatched and invoice moved to `sending`.
+          description: |
+            Notification dispatched and invoice moved to `sending`.
+            Body is empty (no content).
         '404':
           description: Invoice does not exist or `{id}` is not a valid UUID.
           content:
@@ -155,7 +181,7 @@ components:
       name: id
       in: path
       required: true
-      description: Invoice UUID (v4).
+      description: Invoice id (RFC 4122 UUID string; not restricted to version 4).
       schema:
         type: string
         format: uuid
@@ -176,11 +202,10 @@ components:
           example: ada@example.test
         product_lines:
           description: |
-            Optional on the wire — the `FormRequest` treats a missing key as
-            an empty list. An invoice created with no lines is valid `draft`
-            state but cannot be sent (see `sendInvoice` 422).
+            Optional on the wire — omit the key or send `[]`. The `FormRequest`
+            treats a missing key as an empty list. An invoice created with no
+            lines is valid `draft` state but cannot be sent (see `sendInvoice` 422).
           type: array
-          default: []
           items: { $ref: '#/components/schemas/ProductLineInput' }
 
     ProductLineInput:
@@ -257,19 +282,24 @@ components:
     Error:
       type: object
       required: [message]
+      additionalProperties: false
       properties:
         message: { type: string }
+      description: |
+        Domain / not-found body from `bootstrap/app.php` renderers.
+        Not RFC 7807 — see info.description.
 
     ValidationError:
-      allOf:
-        - $ref: '#/components/schemas/Error'
-        - type: object
-          properties:
-            errors:
-              type: object
-              description: Present on Laravel `FormRequest` failures; omitted for domain-invariant rejections.
-              additionalProperties:
-                type: array
-                items: { type: string }
-
-
+      type: object
+      required: [message, errors]
+      properties:
+        message: { type: string }
+        errors:
+          type: object
+          description: Laravel FormRequest field → list of messages.
+          additionalProperties:
+            type: array
+            items: { type: string }
+      description: |
+        Laravel validation failure shape. Distinct from `Error` (domain), which
+        has `message` only.

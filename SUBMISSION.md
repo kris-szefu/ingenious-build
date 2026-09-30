@@ -48,7 +48,8 @@ tests/
   Feature/Invoices/         # HTTP endpoints, DB via RefreshDatabase
   Feature/Notification/     # Fixture module, kept as-is
   Support/                  # Shared test doubles
-    Invoices/               # InMemoryInvoiceRepository, InvoiceIds, FixedIdGenerator
+    Invoices/               # InMemoryInvoiceRepository, InvoiceIds, FixedIdGenerator,
+                            # RecordingCustomerNotifier, RecordingEventDispatcher
     Notifications/          # FakeDriver — records DriverInterface::send calls
 ```
 
