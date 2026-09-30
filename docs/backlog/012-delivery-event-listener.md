@@ -23,10 +23,10 @@ As the invoice module, I want to react to the notification module's delivery web
   - Any changes to Notifications module beyond consuming its `Api`.
 
 ## Acceptance criteria
-- [ ] Event for `sending` invoice → status becomes `sent-to-client`, persisted.
-- [ ] Event for unknown invoice → logged, no throw, no DB write.
-- [ ] Event for invoice in `draft` or `sent-to-client` → logged, no throw, no state change.
-- [ ] Only `Modules\Notifications\Api\*` imported.
+- [x] Event for `sending` invoice → status becomes `sent-to-client`, persisted.
+- [x] Event for unknown invoice → logged, no throw, no DB write.
+- [x] Event for invoice in `draft` or `sent-to-client` → logged, no throw, no state change.
+- [x] Only `Modules\Notifications\Api\*` imported.
 
 ## Tests
 - Unit (use-case):
@@ -46,5 +46,5 @@ As the invoice module, I want to react to the notification module's delivery web
 `feat(invoices): react to webhook delivered event`
 
 ## Status
-todo
+done
 
