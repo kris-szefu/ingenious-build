@@ -14,8 +14,8 @@ As an API client, I want to fetch an invoice by id, so that I can display it.
   - Anything else.
 
 ## Acceptance criteria
-- [ ] `200` returns the documented payload shape (matches README fields).
-- [ ] `404` when unknown id.
+- [x] `200` returns the documented payload shape (matches README fields).
+- [x] `404` when unknown id.
 
 ## Tests
 - Feature: happy path + 404.
@@ -27,5 +27,5 @@ As an API client, I want to fetch an invoice by id, so that I can display it.
 `feat(invoices): view endpoint`
 
 ## Status
-todo
+done
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Invoices\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use Modules\Invoices\Domain\Exceptions\InvalidInvoiceId;
 use Ramsey\Uuid\Uuid;
 use Stringable;
 
@@ -13,7 +13,7 @@ final readonly class InvoiceId implements Stringable
     private function __construct(public string $value)
     {
         if (Uuid::isValid($value) === false) {
-            throw new InvalidArgumentException("Invalid InvoiceId UUID: {$value}");
+            throw InvalidInvoiceId::forValue($value);
         }
     }
 
