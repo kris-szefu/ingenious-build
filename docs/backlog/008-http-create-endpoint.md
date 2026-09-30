@@ -18,9 +18,9 @@ As an API client, I want to POST a new invoice, so that I can start the flow via
   - Send/view (other stories).
 
 ## Acceptance criteria
-- [ ] `201` on happy path (empty and non-empty lines).
-- [ ] `422` on invalid payload (non-positive qty/price, missing fields, bad email).
-- [ ] Controller contains no business logic.
+- [x] `201` on happy path (empty and non-empty lines).
+- [x] `422` on invalid payload (non-positive qty/price, missing fields, bad email).
+- [x] Controller contains no business logic.
 
 ## Tests
 - Feature:
@@ -36,5 +36,4 @@ As an API client, I want to POST a new invoice, so that I can start the flow via
 `feat(invoices): create endpoint`
 
 ## Status
-todo
-
+done
