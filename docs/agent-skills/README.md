@@ -13,6 +13,8 @@ One file per concern. Read `default-workflow.md` first.
 - `php-and-laravel-guardrails.md` — strict types + no Laravel magic in Domain/Application + keep-it-simple.
 - `laravel-conventions.md` — how to use Laravel 13 at the framework edges (controllers, FormRequests, Eloquent, jobs, security, testing, deploy).
 - `adr-architecture-guardrails.md` — decision mapping + ADR/architecture-doc updates.
+- `backlog-status.md` — keep `docs/BACKLOG.md` and per-task files in sync with the code.
+- `submission-updates.md` — keep the reviewer-facing `/SUBMISSION.md` in sync with what ships; root `README.md` stays untouched.
 
 ## Reference notes (task-specific facts, not process)
 - `invoice-domain.md` — invoice invariants, state machine, HTTP status codes, and Invoice ↔ Notifications flow.

@@ -20,7 +20,7 @@ Legend: `todo` · `done` · `blocked` · `skipped`
 | 010 | Send-invoice use-case | [010](./backlog/010-send-invoice-use-case.md) | `feat(invoices): send use-case with notification facade` | done | |
 | 011 | POST /invoices/{id}/send | [011](./backlog/011-http-send-endpoint.md) | `feat(invoices): send endpoint` | done | |
 | 012 | Webhook delivered listener | [012](./backlog/012-delivery-event-listener.md) | `feat(invoices): react to webhook delivered event` | done | |
-| 013 | ADR + architecture docs | [013](./backlog/013-adr-and-architecture-docs.md) | `docs(invoices): add ADR and update architecture docs` | todo | |
+| 013 | ADR + architecture docs | [013](./backlog/013-adr-and-architecture-docs.md) | `docs(invoices): add ADR and update architecture docs` | done | Also introduces `/SUBMISSION.md` + `submission-updates` skill; root `README.md` untouched |
 | 014 | Final quality pass | [014](./backlog/014-final-quality-pass.md) | `chore(quality): pint and final test pass` | todo | |
 | 015 | Spike: external state-machine library | [015](./backlog/015-spike-state-machine-library.md) | `docs(invoices): spike external state-machine options (ADR)` | todo | Deferred follow-up to 003 |
 | 016 | Spike: OpenAPI strategy | [016](./backlog/016-spike-openapi-strategy.md) | `docs(invoices): spike openapi strategy (ADR)` | done | ADR 0001 — adopt contract-first (Option D) with `jane-php/open-api` |
@@ -29,5 +29,5 @@ Legend: `todo` · `done` · `blocked` · `skipped`
 
 ## Progress
 - Total: 18
-- Done: 13
+- Done: 14
 - Blocked: 0
